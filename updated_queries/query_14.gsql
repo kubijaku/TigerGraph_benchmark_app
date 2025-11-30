@@ -1,0 +1,16 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_14(STRING old_id, STRING new_id, STRING new_label) FOR GRAPH ConceptGraph { 
+  OldNode = {Concept.*};
+  OldNode = SELECT s FROM OldNode:s WHERE s.id == old_id;
+  
+  INSERT INTO Concept (PRIMARY_ID, label) VALUES (new_id, new_label);
+  
+  S1 = SELECT t FROM OldNode:s -(RELATION:e)-> Concept:t
+         ACCUM INSERT INTO RELATION (FROM, TO, rel_type, label, sentence)
+           VALUES (new_id, t.id, e.rel_type, e.label, e.sentence);
+  
+  S2 = SELECT t FROM OldNode:s -(RELATION_REV:e)-> Concept:t
+       ACCUM INSERT INTO RELATION (FROM, TO, rel_type, label, sentence) 
+             VALUES (t.id, new_id, e.rel_type, e.label, e.sentence);
+  
+  DELETE s FROM OldNode:s;
+}

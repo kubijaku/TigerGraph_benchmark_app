@@ -1,0 +1,7 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_11() FOR GRAPH ConceptGraph { 
+  AllNodes = {Concept.*};
+  
+  Result = SELECT s FROM AllNodes:s WHERE s.outdegree("RELATION_REV") == 0;
+  
+  PRINT Result.size() as nodes_with_no_predecessors_count;
+}

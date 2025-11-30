@@ -1,0 +1,20 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ConceptGraph { 
+  /* Accumulator that finds a single highest number in the graph */
+  MaxAccum<INT> @@max_degree;
+  /* Local accumulator that will store degree per node (temporarily)*/
+  SumAccum<INT> @degree;
+  
+  AllNodes = {Concept.*};
+  
+  Process = SELECT s FROM AllNodes:s
+            ACCUM 
+            INT d = s.outdegree("RELATION") + s.outdegree("RELATION_REV"),
+            s.@degree = d,
+            @@max_degree += d;
+  
+  Result = SELECT s FROM AllNodes:s WHERE s.@degree == @@max_degree;
+  
+  PRINT @@max_degree AS highest_neighbor_count;
+  PRINT Result AS nodes_with_max_neighbors;
+  
+}

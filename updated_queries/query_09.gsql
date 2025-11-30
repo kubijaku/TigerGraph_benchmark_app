@@ -1,0 +1,5 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_09() FOR GRAPH ConceptGraph { 
+  AllNodes = {Concept.*};
+  
+  PRINT AllNodes.size() as total_node_count;
+}

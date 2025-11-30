@@ -1,0 +1,8 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_13() FOR GRAPH ConceptGraph { 
+  AllNodes = {Concept.*};
+  
+  Result = SELECT s FROM AllNodes:s 
+           WHERE (s.outdegree("RELATION") + s.outdegree("RELATION_REV")) == 1;
+  
+  PRINT Result.size() as count_nodes_with_single_neighbor;
+}

@@ -44,14 +44,14 @@ BEGIN
        The first two values are source and target vertex ids,
        followed by edge attributes in the same order declared in the edge. */
     LOAD f TO EDGE Relation VALUES (
-      $"node1",            
+      $"node1",
       $"node2",
       $"id",
-      $"relation",            
-      $"relation;label",   
-      $"relation;dimension",        
-      $"source",           
-      $"sentence"          
+      $"relation",
+      $"relation;label",
+      $"relation;dimension",
+      $"source",
+      $"sentence"
     ) USING SEPARATOR="\t", HEADER="true";
   }
 
