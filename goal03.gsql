@@ -1,0 +1,18 @@
+USE GRAPH ADS
+
+DROP QUERY getPredecessor
+
+BEGIN
+CREATE QUERY getPredecessor(STRING endVid) FOR GRAPH ADS {
+
+  predecessors = SELECT previous
+                 FROM Entity:previous -(Relation:e)-> Entity:current
+                 WHERE current.id == endVid;
+
+  PRINT predecessors;
+}
+END
+
+INSTALL QUERY getPredecessor
+
+RUN QUERY getPredecessor("/c/en/linguistics")

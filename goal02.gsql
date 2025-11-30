@@ -1,0 +1,22 @@
+USE GRAPH ADS
+
+DROP QUERY getSuccessorCount
+
+BEGIN
+CREATE QUERY getSuccessorCount(STRING startVid) FOR GRAPH ADS {
+
+    SumAccum<INT> @@succ_count;
+
+    tmp = SELECT next
+    FROM Entity:current - (Relation:e) -> Entity:next
+    WHERE current.id = startVid
+    ACCUM @@succ_count += 1;
+
+    PRINT @@succ_count AS successor_count;
+}
+END
+
+INSTALL QUERY getSuccessorCount
+
+
+RUN QUERY getSuccessorCount("/c/en/linguistics")

@@ -1,0 +1,21 @@
+USE GRAPH ADS
+
+DROP QUERY getPredecessorCount
+
+BEGIN
+CREATE QUERY getPredecessorCount(STRING endVid) FOR GRAPH ADS {
+    SumAccum<INT> @@pred_count;
+
+    tmp = SELECT previous
+                  FROM Entity:previous -(Relation:e)-> Entity:current
+                  WHERE current.id == endVid
+                  ACCUM @@pred_count += 1;
+
+
+    PRINT @@pred_count AS predecessors_count;
+}
+END
+
+INSTALL QUERY getPredecessorCount
+
+RUN QUERY getPredecessorCount("/c/en/linguistics")

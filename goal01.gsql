@@ -1,0 +1,20 @@
+USE GRAPH ADS
+
+# optional: drop an old query if it exists
+DROP QUERY getSuccessors
+
+
+BEGIN
+CREATE QUERY getSuccessors(STRING startVid) FOR GRAPH ADS {
+
+    successors = SELECT next
+        FROM Entity:current -(Relation:e)-> Entity:next
+        WHERE current.id = startVid;
+
+    PRINT successors;
+}
+END
+
+INSTALL QUERY getSuccessors
+
+RUN QUERY getSuccessors("/c/en/linguistics")
