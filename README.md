@@ -16,20 +16,29 @@ This is the repository for the Advanced Database Systems Project.
   docker image list
 ```
 
-3. Run the image
-
+3. Create directory for TigerGraph
 ```bash
-  docker run -d --name tgraph -p 14240:14240 -p 9000:9000 [image_name]
+  mkdir ~/temp_tiger
 ```
 
-4. Start all services
+4. Run the image
 
 ```bash
+  docker run -d --name tgraph -p 14240:14240 -p 9000:9000 -v ~/temp_tiger:/home/tigergraph/mydata \ [image_name]
+```
+
+5. Open container terminal 
+```bash
   docker exec -it tgraph bash
+```
+
+6. Start all services
+```bash
   gadmin start all
 ```
 
-5. Check the status
+
+7. Check the status
 
 ```bash
   gadmin status
@@ -39,16 +48,16 @@ Then, your local web ui will be held here: [http://127.0.0.1:14240](http://127.0
 
 ## Loading the data
 
-1. Copy the file with data to container with TigerGraph
+1. Copy the file with data to container by copying to mounted volume
 
 ```bash
-  docker cp ./cskg.tsv tgraph:/home/tigergraph/data
+cp ./cskg.tsv ~/temp_tiger
 ```
 
 2. Log into the container with running TigerGraph instance
 
 ```bash
-  docker exec -it -u tigergraph tgraph bash
+  docker exec -it tgraph bash
 ```
 
 3. Start the GSQL shell
@@ -57,43 +66,73 @@ Then, your local web ui will be held here: [http://127.0.0.1:14240](http://127.0
   gsql
 ```
 
-4. Define the schema
+4. Define the schema using import script
+*Note: there cannot be tab or space before the word BEGIN or END
 
 ```gsql
-  USE GLOBAL
-  DROP ALL
+BEGIN
+  CREATE VERTEX Entity(
+    PRIMARY_ID id STRING,
+    label STRING
+  ) WITH primary_id_as_attribute="true"
 
-  CREATE VERTEX Concept (PRIMARY_ID id STRING, label STRING) WITH primary_id_as_attribute="true"
+  CREATE DIRECTED EDGE Relation(
+    FROM Entity ,
+    TO Entity ,
+    id STRING,
+    relation STRING,
+    label STRING,
+    dimension STRING,
+    source STRING,
+    sentence STRING
+  )
 
-  CREATE DIRECTED EDGE RELATION (FROM Concept, TO Concept, rel_type STRING, label STRING, sentence STRING) WITH REVERSE_EDGE="RELATION_REV"
-
-  CREATE GRAPH ConceptGraph (Concept, RELATION) 
+  CREATE GRAPH ADS (Entity, Relation)
+END
 ```
 
 5. Create loading job
 
 ```gsql
-  USE GRAPH ConceptGraph
+USE GRAPH ADS
 
-  BEGIN
-    CREATE LOADING JOB load_concepts FOR GRAPH ConceptGraph {
-      DEFINE FILENAME f1 = "/home/tigergraph/data.tsv";
+/* Loading job - adjust $"..." to your TSV header names */
+BEGIN
+CREATE LOADING JOB load_relations FOR GRAPH ADS{
 
-    -- Map the file columns. 
-    -- 0=id, 1=node1, 2=relation, 3=node2, 4=node1;label, 5=node2;label, 
-    -- 6=relation;label, 7=relation;dimension, 8=source, 9=sentence
-    
-      LOAD f1 TO VERTEX Concept VALUES ($1, $4) USING SEPARATOR="\t", HEADER="true";
-      LOAD f1 TO VERTEX Concept VALUES ($3, $5) USING SEPARATOR="\t", HEADER="true";
-    
-    -- Load the edge. Note: $1 is Source, $3 is Target
-      LOAD f1 TO EDGE RELATION VALUES ($1, $3, $2, $6, $9) USING SEPARATOR="\t", HEADER="true";
-    }
-  END
+DEFINE FILENAME f = "./mydata/cskg.tsv";
+
+LOAD f TO VERTEX Entity VALUES (
+$"node1",
+$"node1;label"
+) USING SEPARATOR="\t", HEADER="true";
+
+LOAD f TO VERTEX Entity VALUES (
+$"node2",
+$"node2;label"
+) USING SEPARATOR="\t", HEADER="true";
+
+
+LOAD f TO EDGE Relation VALUES (
+$"node1",
+$"node2",
+$"id",
+$"relation",
+$"relation;label",
+$"relation;dimension",
+$"source",
+$"sentence"
+) USING SEPARATOR="\t", HEADER="true";
+}
+
+END
 ```
 
 6. Run the loading job
 
 ```gsql
-  RUN LOADING JOB load_concepts
+  RUN LOADING JOB load_relations USING f="./mydata/cskg.tsv"
 ```
+
+
+

@@ -1,8 +1,23 @@
 BEGIN
-CREATE OR REPLACE DISTRIBUTED QUERY query_06(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
-  Start = {inputNode};
-  
-  PRINT Start[(Start.outdegree("Relation") + Start.outdegree("Relation")) AS neighbor_count]; 
+CREATE OR REPLACE DISTRIBUTED QUERY query_06(STRING nodeId) FOR GRAPH ADS {
+
+  # Step 1: Declare a global vertex set accumulator
+    SumAccum<INT> @@neighbors_count;
+
+    # Step 2: Traverse outgoing edges (successors) and add to accumulator
+    tmp = SELECT neighbor
+    FROM Entity:current -(Relation:e)-> Entity:neighbor
+    WHERE current.id == nodeId
+    ACCUM @@neighbors_count += 1;
+
+    # Step 3: Traverse incoming edges (predecessors) and add to accumulator
+    tmp = SELECT neighbor
+    FROM Entity:neighbor -(Relation:e)-> Entity:current
+    WHERE current.id == nodeId
+    ACCUM @@neighbors_count += 1;
+
+    # Step 4: Print the combined set of all neighbors
+    PRINT @@neighbors_count AS neighbors_count;
 }
 INSTALL QUERY query_06
 END

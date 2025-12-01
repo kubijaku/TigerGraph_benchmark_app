@@ -1,13 +1,23 @@
 BEGIN
-CREATE OR REPLACE DISTRIBUTED QUERY query_05(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
-  Start = {inputNode};
-  
-  Successors = SELECT t FROM Start:s -(Relation:e)-> Entity:t;
-  Predecessors = SELECT t FROM Start:s -(Relation:e)-> Entity:t;
-  
-  Neighbors = Successors UNION Predecessors;
-  
-  PRINT Neighbors;
+CREATE OR REPLACE DISTRIBUTED QUERY query_05(STRING nodeId) FOR GRAPH ADS {
+
+    # Step 1: Declare a global vertex set accumulator
+    SetAccum<VERTEX> @@allNeighbors;
+
+    # Step 2: Traverse outgoing edges (successors) and add to accumulator
+    tmp = SELECT neighbor
+    FROM Entity:current -(Relation:e)-> Entity:neighbor
+    WHERE current.id == nodeId
+    ACCUM @@allNeighbors += neighbor;
+
+    # Step 3: Traverse incoming edges (predecessors) and add to accumulator
+    tmp = SELECT neighbor
+    FROM Entity:neighbor -(Relation:e)-> Entity:current
+    WHERE current.id == nodeId
+    ACCUM @@allNeighbors += neighbor;
+
+    # Step 4: Print the combined set of all neighbors
+    PRINT @@allNeighbors AS allNeighbors;
 }
 INSTALL QUERY query_05
 END
