@@ -1,4 +1,5 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_16(VERTEX<Concept> startNode, VERTEX<Concept> endNode) FOR GRAPH ConceptGraph { 
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_16(VERTEX<Entity> startNode, VERTEX<Entity> endNode) FOR GRAPH ADS { 
   /* We use MinAccum to ensure we don't revisit nodes (visited status) */
   MinAccum<INT> @distance = -1; 
   /* We store the ID of the node that got us here to rebuild the path later */
@@ -17,7 +18,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_16(VERTEX<Concept> startNode, VERTEX<C
       END;
 
       /* Traverse Undirected (Forward UNION Reverse) */
-      Start = SELECT t FROM Start:s -((RELATION|RELATION_REV):e)-> Concept:t
+      Start = SELECT t FROM Start:s -((Relation|Relation):e)-> Entity:t
               WHERE t.@distance == -1
               ACCUM 
                   t.@distance = s.@distance + 1,
@@ -30,3 +31,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_16(VERTEX<Concept> startNode, VERTEX<C
   
   PRINT EndSet[EndSet.@distance AS shortest_distance];
 }
+INSTALL QUERY query_16
+END

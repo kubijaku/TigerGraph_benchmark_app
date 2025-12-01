@@ -1,14 +1,15 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ConceptGraph { 
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ADS { 
   /* Accumulator that finds a single highest number in the graph */
   MaxAccum<INT> @@max_degree;
   /* Local accumulator that will store degree per node (temporarily)*/
   SumAccum<INT> @degree;
   
-  AllNodes = {Concept.*};
+  AllNodes = {Entity.*};
   
   Process = SELECT s FROM AllNodes:s
             ACCUM 
-            INT d = s.outdegree("RELATION") + s.outdegree("RELATION_REV"),
+            INT d = s.outdegree("Relation") + s.outdegree("Relation"),
             s.@degree = d,
             @@max_degree += d;
   
@@ -18,3 +19,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ConceptGraph {
   PRINT Result AS nodes_with_max_neighbors;
   
 }
+INSTALL QUERY query_12
+END

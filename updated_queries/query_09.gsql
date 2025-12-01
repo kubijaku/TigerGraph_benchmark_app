@@ -1,5 +1,8 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_09() FOR GRAPH ConceptGraph { 
-  AllNodes = {Concept.*};
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_09() FOR GRAPH ADS { 
+  AllNodes = {Entity.*};
   
   PRINT AllNodes.size() as total_node_count;
 }
+INSTALL QUERY query_09
+END

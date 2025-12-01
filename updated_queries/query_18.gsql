@@ -1,4 +1,5 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_18(VERTEX<Concept> startNode, INT depth) FOR GRAPH ConceptGraph { 
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_18(VERTEX<Entity> startNode, INT depth) FOR GRAPH ADS { 
   MinAccum<INT> @polarity = -1; 
   OrAccum @visited = false;
   
@@ -7,7 +8,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_18(VERTEX<Concept> startNode, INT dept
           ACCUM s.@polarity = 0, s.@visited = true;
 
   FOREACH i IN RANGE[1, depth] DO
-    Start = SELECT t FROM Start:s -(RELATION:e)-> Concept:t
+    Start = SELECT t FROM Start:s -(Relation:e)-> Entity:t
             WHERE (e.rel_type == "/r/Synonym" OR e.rel_type == "/r/Antonym")
             AND t.@visited == false
             ACCUM 
@@ -22,3 +23,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_18(VERTEX<Concept> startNode, INT dept
   
   PRINT Result; 
 }
+INSTALL QUERY query_18
+END

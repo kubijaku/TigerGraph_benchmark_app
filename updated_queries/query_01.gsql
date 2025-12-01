@@ -1,5 +1,8 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_01(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_01(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
   Start = {inputNode};
-  Successors = SELECT t from Start:s -(RELATION:e)-> Concept:t;
+  Successors = SELECT t from Start:s -(Relation:e)-> Entity:t;
   PRINT Successors;
 }
+INSTALL QUERY query_01
+END

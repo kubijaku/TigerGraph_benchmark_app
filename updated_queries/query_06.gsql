@@ -1,5 +1,8 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_06(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_06(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
   Start = {inputNode};
   
-  PRINT Start[(Start.outdegree("RELATION") + Start.outdegree("RELATION_REV")) AS neighbor_count]; 
+  PRINT Start[(Start.outdegree("Relation") + Start.outdegree("Relation")) AS neighbor_count]; 
 }
+INSTALL QUERY query_06
+END

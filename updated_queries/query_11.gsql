@@ -1,7 +1,10 @@
-CREATE OR REPLACE DISTRIBUTED QUERY query_11() FOR GRAPH ConceptGraph { 
-  AllNodes = {Concept.*};
+BEGIN
+CREATE OR REPLACE DISTRIBUTED QUERY query_11() FOR GRAPH ADS { 
+  AllNodes = {Entity.*};
   
-  Result = SELECT s FROM AllNodes:s WHERE s.outdegree("RELATION_REV") == 0;
+  Result = SELECT s FROM AllNodes:s WHERE s.outdegree("Relation") == 0;
   
   PRINT Result.size() as nodes_with_no_predecessors_count;
 }
+INSTALL QUERY query_11
+END
