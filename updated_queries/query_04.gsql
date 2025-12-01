@@ -1,0 +1,5 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_04(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+  Start = {inputNode};
+  
+  PRINT Start[Start.outdegree("RELATION_REV") AS predecessor_count];
+}

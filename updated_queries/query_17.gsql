@@ -1,0 +1,25 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_17(VERTEX<Concept> startNode, INT depth) FOR GRAPH ConceptGraph { 
+  /* 0 = Synonym, 1 = Antonym */
+  MinAccum<INT> @polarity = -1; 
+  OrAccum @visited = false;
+  
+  Start = {startNode};
+  Start = SELECT s FROM Start:s 
+          ACCUM s.@polarity = 0, s.@visited = true;
+
+  FOREACH i IN RANGE[1, depth] DO
+    Start = SELECT t FROM Start:s -(RELATION:e)-> Concept:t
+            WHERE (e.rel_type == "/r/Synonym" OR e.rel_type == "/r/Antonym")
+            AND t.@visited == false
+            ACCUM 
+              INT edgeVal = 0,
+              IF e.rel_type == "/r/Antonym" THEN edgeVal = 1 END,
+              /* XOR here */
+              t.@polarity = (s.@polarity + edgeVal) % 2, 
+              t.@visited = true;
+  END;
+
+  Result = SELECT s FROM Start:s WHERE s.@polarity == 0;
+  
+  PRINT Result;
+}

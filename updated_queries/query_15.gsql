@@ -1,0 +1,36 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_15(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+  /* We use SetAccum to store the relationship types used to reach the intermediate node.
+     We use @is_start to ensure we don't identify the start node as its own neighbor.
+  */
+  SetAccum<STRING> @seen_child_types;
+  SetAccum<STRING> @seen_parent_types;
+  OrAccum @is_start = false;
+
+  Start = {inputNode};
+  Start = SELECT s FROM Start:s ACCUM s.@is_start = true;
+
+  /* PART A: Find siblings via a Common Child */
+  
+  /* Go to children and remember the edge type */
+  Children = SELECT t FROM Start:s -(RELATION:e)-> Concept:t
+             ACCUM t.@seen_child_types += e.rel_type;
+
+  /* Go from children 'back' to siblings using the REVERSE edge. */
+  SimilarByChild = SELECT t FROM Children:s -(RELATION_REV:e)-> Concept:t
+                   WHERE t.@is_start == false 
+                     AND e.rel_type IN s.@seen_child_types;
+
+  /* PART B: Find siblings via a Common Parent*/
+  
+  /* Go to parents and remember the edge type */
+  Parents = SELECT t FROM Start:s -(RELATION_REV:e)-> Concept:t
+            ACCUM t.@seen_parent_types += e.rel_type;
+
+  /* Go from parents 'down' to siblings using the FORWARD edge. */
+  SimilarByParent = SELECT t FROM Parents:s -(RELATION:e)-> Concept:t
+                    WHERE t.@is_start == false 
+                      AND e.rel_type IN s.@seen_parent_types;
+
+  Result = SimilarByChild UNION SimilarByParent;
+  PRINT Result;
+}

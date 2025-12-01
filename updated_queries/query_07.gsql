@@ -1,0 +1,8 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_07(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+  Start = {inputNode};
+  
+  Successors = SELECT t FROM Start:s -(RELATION:e)-> Concept:t;
+  GrandChildren = SELECT t FROM Successors:s -(RELATION:e)-> Concept:t;
+  
+  PRINT GrandChildren; 
+}

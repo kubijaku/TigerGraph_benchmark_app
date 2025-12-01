@@ -1,0 +1,6 @@
+CREATE OR REPLACE DISTRIBUTED QUERY query_03(VERTEX<Concept> inputNode) FOR GRAPH ConceptGraph { 
+  Start = {inputNode};
+  Predecessors = SELECT t FROM Start:s -(RELATION_REV:e)-> Concept:t;
+  
+  PRINT Predecessors;
+}
