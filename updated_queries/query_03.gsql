@@ -1,9 +1,11 @@
 BEGIN
-CREATE OR REPLACE DISTRIBUTED QUERY query_03(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
-  Start = {inputNode};
-  Predecessors = SELECT t FROM Start:s -(Relation:e)-> Entity:t;
-  
-  PRINT Predecessors;
+CREATE OR REPLACE DISTRIBUTED QUERY query_03(STRING endVid) FOR GRAPH ADS {
+
+  predecessors = SELECT previous
+                 FROM Entity:previous -(Relation:e)-> Entity:current
+                 WHERE current.id == endVid;
+
+  PRINT predecessors;
 }
 INSTALL QUERY query_03
 END

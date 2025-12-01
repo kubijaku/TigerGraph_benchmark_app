@@ -1,8 +1,14 @@
 BEGIN
-CREATE OR REPLACE DISTRIBUTED QUERY query_04(VERTEX<Entity> inputNode) FOR GRAPH ADS { 
-  Start = {inputNode};
-  
-  PRINT Start[Start.outdegree("Relation") AS predecessor_count];
+CREATE OR REPLACE DISTRIBUTED QUERY query_04(STRING endVid) FOR GRAPH ADS {
+    SumAccum<INT> @@pred_count;
+
+    tmp = SELECT previous
+                  FROM Entity:previous -(Relation:e)-> Entity:current
+                  WHERE current.id == endVid
+                  ACCUM @@pred_count += 1;
+
+
+    PRINT @@pred_count AS predecessors_count;
 }
 INSTALL QUERY query_04
 END
