@@ -28,22 +28,22 @@ jobs:
           - name: Copy cskg.tsv into TigerGraph container
             run: |
                 # Copy the file from GitHub workspace into the container
-                docker exec tigergraph mkdir -p home/tigergraph/mydata
-                docker cp ./cskg.tsv tigergraph:home/tigergraph/mydata/cskg.tsv
+                docker exec tigergraph mkdir -p /home/tigergraph/mydata
+                docker cp ./cskg.tsv tigergraph:/home/tigergraph/mydata/cskg.tsv
                 
-                echo "File cskg.tsv copied into home/tigergraph/mydata inside container."
+                echo "File cskg.tsv copied into /home/tigergraph/mydata inside container."
             
           - name: Copy initialize file into TigerGraph container
             run: |
                 # Copy the file from GitHub workspace into the container
-                docker cp ./import.gsql tigergraph:home/tigergraph/mydata/import.gsql
+                docker cp ./import.gsql tigergraph:/home/tigergraph/mydata/import.gsql
 
-                echo "File import.gsql copied into home/tigergraph/mydata inside container."
+                echo "File import.gsql copied into /home/tigergraph/mydata inside container."
             
           - name: Run init script
             run: |
                 docker exec tigergraph bash -c \
-                    "source /home/tigergraph/.bashrc && gsql < home/tigergraph/mydata/import.gsql"
+                    "source /home/tigergraph/.bashrc && gsql < /home/tigergraph/mydata/import.gsql"
                 
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && \
