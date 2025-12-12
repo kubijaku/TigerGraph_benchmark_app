@@ -1,0 +1,104 @@
+name: TigerGraph Query Performance Test
+
+on:
+    workflow_dispatch:
+
+jobs:
+    performance-test:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: Start TigerGraph container
+            run: |
+                docker run -d --name tigergraph \
+                -p 14022:14022 \
+                -p 9000:9000 \
+                tigergraph/tigergraph:latest
+
+          - name: Wait for TigerGraph to initialize
+            run: |
+                echo "Waiting for TigerGraph services..."
+                sleep 60
+
+          - name: Start TigerGraph services inside container
+            run: |
+                echo "Initializing TigerGraph with gadmin..."
+                docker exec tigergraph bash -c "gadmin start all"
+                echo "Waiting for TigerGraph services to fully start..."
+                sleep 30
+        
+          - name: Copy cskg.tsv into TigerGraph container
+            run: |
+                # Copy the file from GitHub workspace into the container
+                docker cp ./cskg.tsv tigergraph:/mydata/cskg.tsv
+                
+                echo "File cskg.tsv copied into /mydata inside container."
+            
+          - name: Copy initialize file into TigerGraph container
+            run: |
+                # Copy the file from GitHub workspace into the container
+                docker cp ./import.gsql tigergraph:/mydata/import.gsql
+
+                echo "File import.gsql copied into /mydata inside container."
+            
+          - name: Run init script
+            run: |
+                docker exec tigergraph bash -c \
+                    "source /home/tigergraph/.bashrc && gsql < /mydata/import.gsql"
+                
+                docker exec tigergraph bash -c \
+                    "source /home/tigergraph/.bashrc && \
+                    ./tigergraph/app/cmd/gsql 'RUN LOADING JOB load_relations USING f="./mydata/cskg.tsv"'"
+
+          - name: Run query multiple times and collect metrics
+            id: metrics
+            run: |
+                TIMES=()
+                MEMS=()
+
+                for i in {1..5}; do
+                    echo "Run $i"
+
+                    SECONDS=0
+
+
+                    OUTPUT=$(docker exec tigergraph bash -c \
+                    "source /home/tigergraph/.bashrc && \
+                    ./tigergraph/app/cmd/gsql 'USE GRAPH ADS RUN QUERY query_01(\"/c/en/linguistics\")'")
+                    
+                    duration=$SECONDS
+                    echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+                    #########
+
+                    # Extract memory usage from output
+                    MEM=$(echo "$OUTPUT" | grep "Maximum resident set size" | awk '{print $6}')
+                    echo "Run $i memory: $MEM KB"
+                    echo "Time: $duration   Memory: $MEM KB"
+
+                    # Store results
+                    TIMES+=("$duration")
+                    MEMS+=("$MEM")
+                done
+
+                # Sort time and memory arrays
+                SORTED_TIMES=($(printf "%s\n" "${TIMES[@]}" | sort))
+                SORTED_MEMS=($(printf "%s\n" "${MEMS[@]}" | sort -n))
+
+                # Remove min (index 0) and max (index 4)
+                TRIMMED_TIMES=("${SORTED_TIMES[@]:1:3}")
+                TRIMMED_MEMS=("${SORTED_MEMS[@]:1:3}")
+
+                # Compute min of remaining 3 times
+                FINAL_TIME=$(printf "%s\n" "${TRIMMED_TIMES[@]}" | sort | head -n1)
+                FINAL_MEM=$(printf "%s\n" "${TRIMMED_MEMS[@]}" | sort -n | head -n1)
+
+                echo "final_time=$FINAL_TIME" >> $GITHUB_OUTPUT
+                echo "final_memory=$FINAL_MEM" >> $GITHUB_OUTPUT
+
+          - name: Display results
+            run: |
+                echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
+                echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
