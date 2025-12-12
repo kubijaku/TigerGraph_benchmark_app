@@ -18,17 +18,12 @@ jobs:
                 -p 9000:9000 \
                 tigergraph/tigergraph:latest
 
-          - name: Wait for TigerGraph to initialize
-            run: |
-                echo "Waiting for TigerGraph services..."
-                sleep 60
-
           - name: Start TigerGraph services inside container
             run: |
                 echo "Initializing TigerGraph with gadmin..."
-                docker exec tigergraph bash -c "gadmin start all"
+                docker exec tigergraph bash -c \
+                    "./tigergraph/app/cmd/gadmin start all"
                 echo "Waiting for TigerGraph services to fully start..."
-                sleep 30
         
           - name: Copy cskg.tsv into TigerGraph container
             run: |
