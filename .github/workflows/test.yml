@@ -43,7 +43,7 @@ jobs:
           - name: Run init script
             run: |
                 docker exec tigergraph bash -c \
-                    "source /home/tigergraph/.bashrc && gsql < /home/tigergraph/mydata/import.gsql"
+                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
                 
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && \
