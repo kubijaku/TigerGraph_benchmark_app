@@ -1,7 +1,10 @@
 name: TigerGraph Query Performance Test
 
 on:
-    workflow_dispatch:
+    push:
+        branches:
+            - main
+            - fix/workflow-test
 
 jobs:
     performance-test:
