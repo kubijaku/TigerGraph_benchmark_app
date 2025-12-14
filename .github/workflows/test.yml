@@ -16,6 +16,8 @@ jobs:
                 docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
+                -e TIGERGRAPH_LICENSE=Community \
+                -e TG_ACCEPT_LICENSE=Y \
                 tigergraph/tigergraph:latest
 
           - name: Start TigerGraph services inside container
