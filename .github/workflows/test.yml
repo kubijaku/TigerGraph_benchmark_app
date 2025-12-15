@@ -33,6 +33,10 @@ jobs:
                     "chmod 644 /home/tigergraph/cskg.tsv"
                 
                 echo "File cskg.tsv copied into /home/tigergraph inside container."
+          - name: Print head of cskg file
+            run: |
+                docker exec tigergraph bash -c \
+                    "head -n 5 /home/tigergraph/cskg.tsv"
             
           - name: Copy initialize file into TigerGraph container
             run: |
