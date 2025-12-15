@@ -41,6 +41,11 @@ jobs:
 
                 echo "File import.gsql copied into /home/tigergraph inside container."
             
+          - name: Wait for TigerGraph to be ready
+            run: |
+                echo "Waiting for TigerGraph services to be ready..."
+                sleep 10  # Wait for 60 seconds to ensure services are up
+
           - name: Run init script
             run: |
                 docker exec tigergraph bash -c \
