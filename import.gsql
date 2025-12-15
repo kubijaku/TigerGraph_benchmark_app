@@ -23,34 +23,36 @@ USE GRAPH ADS
 
 /* Loading job - adjust $"..." to your TSV header names */
 BEGIN
-  CREATE LOADING JOB load_relations FOR GRAPH ADS {
+ CREATE LOADING JOB load_relations FOR GRAPH ADS {
 
     /* Define the filename variable (used when running the job) */
     DEFINE FILENAME f = "./cskg.tsv";
 
-    /* Load node1 */
+    /* Load node1 as a vertex */
     LOAD f TO VERTEX Entity VALUES (
-      $0,   
-      $1    
-    ) USING SEPARATOR="\t";
+      $"node1",         
+      $"node1;label"    
+    ) USING SEPARATOR="\t", HEADER="true";
 
-    /* Load node2 */
+    /* Load node2 as a vertex */
     LOAD f TO VERTEX Entity VALUES (
-      $2,   
-      $3    
-    ) USING SEPARATOR="\t";
+      $"node2",         
+      $"node2;label"    
+    ) USING SEPARATOR="\t", HEADER="true";
 
-    /* Load edge */
+    /* Load edge attributes.
+       The first two values are source and target vertex ids,
+       followed by edge attributes in the same order declared in the edge. */
     LOAD f TO EDGE Relation VALUES (
-      $0,   
-      $2,   
-      $4,   
-      $5,   
-      $6,   
-      $7,   
-      $8,   
-      $9    
-    ) USING SEPARATOR="\t";
+      $"node1",
+      $"node2",
+      $"id",
+      $"relation",
+      $"relation;label",
+      $"relation;dimension",
+      $"source",
+      $"sentence"
+    ) USING SEPARATOR="\t", HEADER="true";
   }
 
 END
