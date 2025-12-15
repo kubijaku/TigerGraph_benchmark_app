@@ -30,26 +30,26 @@ BEGIN
 
     /* Load node1 */
     LOAD f TO VERTEX Entity VALUES (
-      $0,   -- node1
-      $1    -- node1 label
+      $0,   
+      $1    
     ) USING SEPARATOR="\t";
 
     /* Load node2 */
     LOAD f TO VERTEX Entity VALUES (
-      $2,   -- node2
-      $3    -- node2 label
+      $2,   
+      $3    
     ) USING SEPARATOR="\t";
 
     /* Load edge */
     LOAD f TO EDGE Relation VALUES (
-      $0,   -- FROM node1
-      $2,   -- TO node2
-      $4,   -- id
-      $5,   -- relation
-      $6,   -- relation label
-      $7,   -- dimension
-      $8,   -- source
-      $9    -- sentence
+      $0,   
+      $2,   
+      $4,   
+      $5,   
+      $6,   
+      $7,   
+      $8,   
+      $9    
     ) USING SEPARATOR="\t";
   }
 
