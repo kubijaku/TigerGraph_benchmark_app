@@ -26,6 +26,7 @@ jobs:
         
           - name: Copy cskg.tsv into TigerGraph container
             run: |
+                git lfs track "*.tsv"
                 # Copy the file from GitHub workspace into the container
                 docker cp ./cskg.tsv tigergraph:/home/tigergraph/cskg.tsv
                 # Change mode to ensure TigerGraph can read it
