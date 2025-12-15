@@ -28,7 +28,6 @@ jobs:
         
           - name: Copy cskg.tsv into TigerGraph container
             run: |
-                git lfs track "*.tsv"
                 # Copy the file from GitHub workspace into the container
                 docker cp ./cskg.tsv tigergraph:/home/tigergraph/cskg.tsv
                 # Change mode to ensure TigerGraph can read it
@@ -47,11 +46,6 @@ jobs:
                 docker cp ./import.gsql tigergraph:/home/tigergraph/import.gsql
 
                 echo "File import.gsql copied into /home/tigergraph inside container."
-            
-          - name: Wait for TigerGraph to be ready
-            run: |
-                echo "Waiting for TigerGraph services to be ready..."
-                sleep 10  # Wait for 60 seconds to ensure services are up
 
           - name: Run init script
             run: |
