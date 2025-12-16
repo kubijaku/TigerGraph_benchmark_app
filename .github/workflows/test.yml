@@ -20,7 +20,7 @@ jobs:
                 -p 9000:9000 \
                 -v $PWD/initialization:/home/tigergraph/mydata \
                 -v $PWD/queries:/home/tigergraph/queries \
-                -v #PWD/test1:/home/tigergraph/test1 \
+                -v $PWD/test1:/home/tigergraph/test1 \
                 tigergraph/community:4.2.2
 
           - name: Start TigerGraph services inside container
