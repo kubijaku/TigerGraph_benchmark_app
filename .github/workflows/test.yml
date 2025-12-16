@@ -15,7 +15,7 @@ jobs:
 
           - name: Start TigerGraph container
             run: |
-                docker run -d --name tigergraph123 \
+                docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
                 -v ./:/home/tigergraph \
