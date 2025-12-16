@@ -18,7 +18,7 @@ jobs:
                 docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
-                -v $PWD/initialization:/home/tigergraph \
+                -v $PWD/initialization:/home/tigergraph/mydata \
                 tigergraph/community:4.2.2
 
           - name: Start TigerGraph services inside container
@@ -30,28 +30,28 @@ jobs:
         #   - name: Copy cskg.tsv into TigerGraph container
         #     run: |
         #         # Copy the file from GitHub workspace into the container
-        #         docker cp ./cskg.tsv tigergraph:/home/tigergraph/cskg.tsv
+        #         docker cp ./cskg.tsv tigergraph:/home/tigergraph/mydata/cskg.tsv
         #         # Change mode to ensure TigerGraph can read it
         #         docker exec -u root tigergraph bash -c \
-        #             "chmod 644 /home/tigergraph/cskg.tsv"
+        #             "chmod 644 /home/tigergraph/mydata/cskg.tsv"
                 
         #         echo "File cskg.tsv copied into /home/tigergraph inside container."
           - name: Print head of cskg file
             run: |
                 docker exec tigergraph bash -c \
-                    "head -n 5 /home/tigergraph/cskg.tsv"
+                    "head -n 5 /home/tigergraph/mydata/cskg.tsv"
             
         #   - name: Copy initialize file into TigerGraph container
         #     run: |
         #         # Copy the file from GitHub workspace into the container
-        #         docker cp ./import.gsql tigergraph:/home/tigergraph/import.gsql
+        #         docker cp ./import.gsql tigergraph:/home/tigergraph/mydata/import.gsql
 
         #         echo "File import.gsql copied into /home/tigergraph inside container."
 
           - name: Run init script
             run: |
                 docker exec tigergraph bash -c \
-                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/import.gsql"
+                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
                 
 
           - name: Run query multiple times and collect metrics
