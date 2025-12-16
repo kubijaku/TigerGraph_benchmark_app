@@ -31,5 +31,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_16(VERTEX<Entity> startNode, VERTEX<En
   
   PRINT EndSet[EndSet.@distance AS shortest_distance];
 }
+USE GRAPH ADS
 INSTALL QUERY query_16
 END

@@ -10,5 +10,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_02(STRING startVid) FOR GRAPH ADS {
 
     PRINT @@succ_count AS successor_count;
 }
+USE GRAPH ADS
 INSTALL QUERY query_02
 END

@@ -1,11 +1,5 @@
-USE GRAPH ADS
-
-# optional: drop an old query if it exists
-DROP QUERY getSuccessors
-
-
 BEGIN
-CREATE QUERY getSuccessors(STRING startVid) FOR GRAPH ADS {
+CREATE OR REPLACE DISTRIBUTED QUERY getSuccessors(STRING startVid) FOR GRAPH ADS {
 
     successors = SELECT next
         FROM Entity:current -(Relation:e)-> Entity:next

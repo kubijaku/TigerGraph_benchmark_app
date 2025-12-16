@@ -14,26 +14,27 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_15(VERTEX<Entity> inputNode) FOR GRAPH
   
   /* Go to children and remember the edge type */
   Children = SELECT t FROM Start:s -(Relation:e)-> Entity:t
-             ACCUM t.@seen_child_types += e.rel_type;
+             ACCUM t.@seen_child_types += e.id;
 
   /* Go from children 'back' to siblings using the REVERSE edge. */
   SimilarByChild = SELECT t FROM Children:s -(Relation:e)-> Entity:t
                    WHERE t.@is_start == false 
-                     AND e.rel_type IN s.@seen_child_types;
+                     AND e.id IN s.@seen_child_types;
 
   /* PART B: Find siblings via a Common Parent*/
   
   /* Go to parents and remember the edge type */
   Parents = SELECT t FROM Start:s -(Relation:e)-> Entity:t
-            ACCUM t.@seen_parent_types += e.rel_type;
+            ACCUM t.@seen_parent_types += e.id;
 
   /* Go from parents 'down' to siblings using the FORWARD edge. */
   SimilarByParent = SELECT t FROM Parents:s -(Relation:e)-> Entity:t
                     WHERE t.@is_start == false 
-                      AND e.rel_type IN s.@seen_parent_types;
+                      AND e.id IN s.@seen_parent_types;
 
   Result = SimilarByChild UNION SimilarByParent;
   PRINT Result;
 }
+USE GRAPH ADS
 INSTALL QUERY query_15
 END

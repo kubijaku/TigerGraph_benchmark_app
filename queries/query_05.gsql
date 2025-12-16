@@ -19,5 +19,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_05(STRING nodeId) FOR GRAPH ADS {
     # Step 4: Print the combined set of all neighbors
     PRINT @@allNeighbors AS allNeighbors;
 }
+USE GRAPH ADS
 INSTALL QUERY query_05
 END

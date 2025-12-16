@@ -6,14 +6,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_14(STRING old_id, STRING new_id, STRIN
   INSERT INTO Entity (PRIMARY_ID, label) VALUES (new_id, new_label);
   
   S1 = SELECT t FROM OldNode:s -(Relation:e)-> Entity:t
-         ACCUM INSERT INTO Relation (FROM, TO, rel_type, label, sentence)
-           VALUES (new_id, t.id, e.rel_type, e.label, e.sentence);
+         ACCUM INSERT INTO Relation (FROM, TO, id, label, sentence)
+           VALUES (new_id, t.id, e.id, e.label, e.sentence);
   
   S2 = SELECT t FROM OldNode:s -(Relation:e)-> Entity:t
-       ACCUM INSERT INTO Relation (FROM, TO, rel_type, label, sentence) 
-             VALUES (t.id, new_id, e.rel_type, e.label, e.sentence);
+       ACCUM INSERT INTO Relation (FROM, TO, id, label, sentence) 
+             VALUES (t.id, new_id, e.id, e.label, e.sentence);
   
   DELETE s FROM OldNode:s;
 }
+USE GRAPH ADS
 INSTALL QUERY query_14
 END

@@ -10,5 +10,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_04(STRING endVid) FOR GRAPH ADS {
 
     PRINT @@pred_count AS predecessors_count;
 }
+USE GRAPH ADS
 INSTALL QUERY query_04
 END
