@@ -18,7 +18,7 @@ jobs:
                 docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
-                -v ./:/home/tigergraph \
+                -v $PWD/initialization:/home/tigergraph \
                 tigergraph/community:4.2.2
 
           - name: Start TigerGraph services inside container
