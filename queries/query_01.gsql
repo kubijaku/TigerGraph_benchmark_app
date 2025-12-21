@@ -1,0 +1,15 @@
+USE GRAPH ADS
+
+BEGIN
+  CREATE OR REPLACE DISTRIBUTED QUERY query_01(STRING startVid) FOR GRAPH ADS {
+
+    successors =
+      SELECT next
+      FROM Entity:current -(Relation:e)-> Entity:next
+      WHERE current.id == startVid;
+
+    PRINT successors;
+  }
+END
+
+INSTALL QUERY query_01

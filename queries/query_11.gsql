@@ -6,5 +6,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_11() FOR GRAPH ADS {
   
   PRINT Result.size() as nodes_with_no_predecessors_count;
 }
+USE GRAPH ADS
 INSTALL QUERY query_11
 END

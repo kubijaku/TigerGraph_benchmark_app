@@ -1,6 +1,5 @@
 BEGIN
-CREATE OR REPLACE DISTRIBUTED QUERY query_17(VERTEX<Entity> startNode, INT depth) FOR GRAPH ADS { 
-  /* 0 = Synonym, 1 = Antonym */
+CREATE OR REPLACE DISTRIBUTED QUERY query_18(VERTEX<Entity> startNode, INT depth) FOR GRAPH ADS { 
   MinAccum<INT> @polarity = -1; 
   OrAccum @visited = false;
   
@@ -10,19 +9,20 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_17(VERTEX<Entity> startNode, INT depth
 
   FOREACH i IN RANGE[1, depth] DO
     Start = SELECT t FROM Start:s -(Relation:e)-> Entity:t
-            WHERE (e.rel_type == "/r/Synonym" OR e.rel_type == "/r/Antonym")
+            WHERE (e.id == "/r/Synonym" OR e.id == "/r/Antonym")
             AND t.@visited == false
             ACCUM 
               INT edgeVal = 0,
-              IF e.rel_type == "/r/Antonym" THEN edgeVal = 1 END,
-              /* XOR here */
+              IF e.id == "/r/Antonym" THEN edgeVal = 1 END,
               t.@polarity = (s.@polarity + edgeVal) % 2, 
               t.@visited = true;
   END;
 
-  Result = SELECT s FROM Start:s WHERE s.@polarity == 0;
+  /* Filter for Polarity 1 (Antonyms) */
+  Result = SELECT s FROM Start:s WHERE s.@polarity == 1;
   
-  PRINT Result;
+  PRINT Result; 
 }
-INSTALL QUERY query_17
+USE GRAPH ADS
+INSTALL QUERY query_18
 END
