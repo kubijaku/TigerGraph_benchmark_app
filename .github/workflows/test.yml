@@ -8,19 +8,21 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-          - name: Checkout
-            uses: actions/checkout@v4
-            with:
-              lfs: true
+        #   - name: Checkout
+        #     uses: actions/checkout@v4
+        #     with:
+        #       lfs: true
+          - name: Checkout code
+            uses: nschloe/action-cached-lfs-checkout@v1
 
           - name: Start TigerGraph container
             run: |
                 docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
-                -v $PWD/initialization:/home/tigergraph/mydata \
-                -v $PWD/queries:/home/tigergraph/queries \
-                -v $PWD/test1:/home/tigergraph/test1 \
+                -v $PWD/initialization:/home/tigergraph/mydata:ro \
+                -v $PWD/queries:/home/tigergraph/queries:ro \
+                -v $PWD/test1:/home/tigergraph/test1:ro \
                 tigergraph/community:4.2.2
 
           - name: Start TigerGraph services inside container
