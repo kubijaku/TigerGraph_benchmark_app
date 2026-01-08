@@ -33,11 +33,10 @@ jobs:
                 docker run -d --name tigergraph \
                 -p 14022:14022 \
                 -p 9000:9000 \
-                -v $PWD/initialization:/home/tigergraph/mydata:ro \
-                -v $PWD/queries:/home/tigergraph/queries:ro \
-                -v $PWD/test1:/home/tigergraph/test1:ro \
+                -v $PWD/initialization:/home/tigergraph/mydata \
+                -v $PWD/queries:/home/tigergraph/queries \
+                -v $PWD/test1:/home/tigergraph/test1 \
                 tigergraph/community:4.2.2
-
           - name: Start TigerGraph services inside container
             run: |
                 echo "Initializing TigerGraph with gadmin..."
@@ -49,52 +48,53 @@ jobs:
                 docker exec tigergraph bash -c \
                     "head -n 5 /home/tigergraph/mydata/cskg.tsv"
         
-
+          - name : Check gadmin status
+            run: |
+                docker exec tigergraph bash -c \
+                    "./tigergraph/app/cmd/gadmin status gsql"
+          - name: Wait for TigerGraph to be ready
+            run: |
+                echo "Waiting for TigerGraph to be ready..."
+                sleep 10
+                echo "TigerGraph is ready."
+          - name : Check gadmin status
+            run: |
+                docker exec tigergraph bash -c \
+                    "./tigergraph/app/cmd/gadmin status gsql"
+                
           - name: Run init script
             run: |
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
-
           - name: Add query01 to TigerGraph
             run: |
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
                 
-
-          - name: Run query01 on sample-nodes.csv and collect metrics
-            id: metrics
-            run: |
-                echo "Running query_01 for all IDs in sample-nodes.csv"
-
-                set -euo pipefail
-
-                START_TIME=$(date +%s)
-
-                # Run all queries in a single measured block
-                OUTPUT=$(docker exec tigergraph bash -lc "
-                set -e
-                tail -n +2 /home/tigergraph/test1/sample_nodes.csv | cut -d',' -f1 | \
-                /usr/bin/time -v bash -c '
-                    while read -r ID; do
-                    gsql \"USE GRAPH ADS RUN QUERY query_01(\\\"$ID\\\")\" > /dev/null
-                    done
-                '
-                " 2>&1)
-
-                END_TIME=$(date +%s)
-                TOTAL_TIME=$((END_TIME - START_TIME))
-
-                # Extract peak memory (KB)
-                PEAK_MEM=$(echo \"$OUTPUT\" | grep 'Maximum resident set size' | awk '{print \$6}')
-
-                echo "Total execution time: $TOTAL_TIME seconds"
-                echo "Peak memory usage  : $PEAK_MEM KB"
-
-                echo "final_time=$TOTAL_TIME" >> $GITHUB_OUTPUT
-                echo "final_memory=$PEAK_MEM" >> $GITHUB_OUTPUT
-
-
-          - name: Display results
-            run: |
-                echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
-                echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
+          # - name: Run query01 on sample-nodes.csv and collect metrics
+          #   id: metrics
+          #   run: |
+          #     set -euo pipefail
+          #     echo "Running query_01 for all IDs in sample-nodes.csv"
+          #     START_TIME=$(date +%s)
+          #     OUTPUT=$(docker exec tigergraph bash -l <<'EOF'
+          #       set -e
+          #       CSV="/home/tigergraph/test1/sample_nodes.csv"
+          #       /usr/bin/time -v bash -c '
+          #         tail -n +2 "$CSV" | cut -d"," -f1 | while read -r ID; do
+          #           ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null
+          #         done
+          #       '
+          #     EOF
+          #     2>&1)
+          #     END_TIME=$(date +%s)
+          #     TOTAL_TIME=$((END_TIME - START_TIME))
+          #     PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
+          #     echo "Total execution time: $TOTAL_TIME seconds"
+          #     echo "Peak memory usage   : $PEAK_MEM KB"
+          #     echo "final_time=$TOTAL_TIME" >> "$GITHUB_OUTPUT"
+          #     echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
+          # - name: Display results
+          #   run: |
+          #       echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
+          #       echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
