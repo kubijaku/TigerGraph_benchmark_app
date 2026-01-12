@@ -71,6 +71,11 @@ jobs:
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
                 
+          - name: check csv file
+            run: |
+                docker exec tigergraph bash -c \
+                    "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
+                    
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
             run: |
