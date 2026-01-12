@@ -75,7 +75,7 @@ jobs:
             run: |
                 docker exec tigergraph bash -c \
                     "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
-                    
+
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
             run: |
@@ -83,10 +83,6 @@ jobs:
               echo "Running query_01 for all IDs in sample-nodes.csv"
               START_TIME=$(date +%s%N)
               CSV="/home/tigergraph/test1/sample_nodes.csv"
-
-              COUNT=$(tail -n +2 "$CSV" | wc -l)
-              echo "IDs processed: $COUNT"
-
 
               OUTPUT=$(
                 /usr/bin/time -v bash -c '
