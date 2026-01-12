@@ -37,6 +37,7 @@ jobs:
                 -v $PWD/queries:/home/tigergraph/queries \
                 -v $PWD/test1:/home/tigergraph/test1 \
                 tigergraph/community:4.2.2
+
           - name: Start TigerGraph services inside container
             run: |
                 echo "Initializing TigerGraph with gadmin..."
@@ -57,7 +58,7 @@ jobs:
                 echo "Waiting for TigerGraph to be ready..."
                 sleep 10
                 echo "TigerGraph is ready."
-          - name : Check gadmin status
+          - name : Recheck gadmin status
             run: |
                 docker exec tigergraph bash -c \
                     "./tigergraph/app/cmd/gadmin status gsql"
@@ -66,6 +67,7 @@ jobs:
             run: |
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
+
           - name: Add query01 to TigerGraph
             run: |
                 docker exec tigergraph bash -c \
@@ -88,6 +90,7 @@ jobs:
                 /usr/bin/time -v bash -c '
                   tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
                     ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null
+                    echo -n "."
                   done
                 ' 2>&1
               )
@@ -101,6 +104,7 @@ jobs:
               echo "Peak memory usage   : $PEAK_MEM KB"
               echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
               echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
+
           - name: Display results
             run: |
                 echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
