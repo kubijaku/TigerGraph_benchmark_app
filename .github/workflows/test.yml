@@ -76,8 +76,13 @@ jobs:
             run: |
               set -euo pipefail
               echo "Running query_01 for all IDs in sample-nodes.csv"
-              START_TIME=$(date +%s)
+              START_TIME=$(date +%s%N)
               CSV="/home/tigergraph/test1/sample_nodes.csv"
+
+              COUNT=$(tail -n +2 "$CSV" | wc -l)
+              echo "IDs processed: $COUNT"
+
+
               OUTPUT=$(
                 /usr/bin/time -v bash -c '
                   tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
@@ -86,13 +91,14 @@ jobs:
                 ' 2>&1
               )
 
-              END_TIME=$(date +%s)
-              TOTAL_TIME=$((END_TIME - START_TIME))
+              END_TIME=$(date +%s%N)
+              TOTAL_TIME_NS=$((END_TIME - START_TIME))
+              TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
 
               PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
-              echo "Total execution time: $TOTAL_TIME seconds"
+              echo "Total execution time: ${TOTAL_TIME_MS} ms"
               echo "Peak memory usage   : $PEAK_MEM KB"
-              echo "final_time=$TOTAL_TIME" >> "$GITHUB_OUTPUT"
+              echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
               echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
           - name: Display results
             run: |
