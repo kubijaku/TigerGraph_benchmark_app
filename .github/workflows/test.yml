@@ -74,17 +74,21 @@ jobs:
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
             run: |
-              set -eu pipefail
+              set -euo pipefail
               echo "Running query_01 for all IDs in sample-nodes.csv"
               START_TIME=$(date +%s)
               CSV="/home/tigergraph/test1/sample_nodes.csv"
-              tail -n +2 "\$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                  ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"\$ID\")" > /dev/null
-              done
-              EOF
-              2>&1)
+              OUTPUT=$(
+                /usr/bin/time -v bash -c '
+                  tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
+                    ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null
+                  done
+                ' 2>&1
+              )
+
               END_TIME=$(date +%s)
               TOTAL_TIME=$((END_TIME - START_TIME))
+
               PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
               echo "Total execution time: $TOTAL_TIME seconds"
               echo "Peak memory usage   : $PEAK_MEM KB"
