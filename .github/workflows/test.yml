@@ -84,11 +84,10 @@ jobs:
               set -euo pipefail
               echo "Running query_01 for all IDs in sample-nodes.csv"
               START_TIME=$(date +%s%N)
-              CSV="/home/tigergraph/test1/sample_nodes.csv"
 
               OUTPUT=$(
                 /usr/bin/time -v bash -c '
-                  tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
+                  tail -n +2 /home/tigergraph/test1/sample_nodes.csv | cut -d"," -f1 | while IFS= read -r ID; do
                     ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null
                     echo -n "."
                   done
