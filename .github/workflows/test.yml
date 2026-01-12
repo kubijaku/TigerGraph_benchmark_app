@@ -87,9 +87,13 @@ jobs:
 
               OUTPUT=$(
                 /usr/bin/time -v bash -c '
-                  tail -n +2 /home/tigergraph/test1/sample_nodes.csv | cut -d"," -f1 | while IFS= read -r ID; do
-                    ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null
-                    echo -n "."
+                  tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
+                      if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                          echo -n "." >&2
+                      else
+                          echo "Query failed for $ID" >&2
+                          exit 1
+                      fi
                   done
                 ' 2>&1
               )
