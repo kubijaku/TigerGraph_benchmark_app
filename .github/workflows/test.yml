@@ -115,37 +115,42 @@ jobs:
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
             run: |
-              docker exec tigergraph bash -lc '
+                docker exec tigergraph bash -lc <<'EOF'
                 set -euo pipefail
+
                 echo "Running query_01 for all IDs in sample-nodes.csv"
-                START_TIME=$(date +%s%N)
 
                 CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-                OUTPUT=$(
-                  /usr/bin/time -v bash -c '
-                    tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                        if ./tigergraph/app/cmd/gsql "
-                        USE GRAPH ADS 
-                        RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                              echo -n "."
-                        else
-                              echo -n "F"
-                        fi
-                    done
-                  ' 2>&1
-                )
+                START_TIME=$(date +%s%N)
 
-                # END_TIME=$(date +%s%N)
-                # TOTAL_TIME_NS=$((END_TIME - START_TIME))
-                # TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
+                TOTAL=0
+                FAILS=0
 
-                # PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
-                # echo "Total execution time: ${TOTAL_TIME_MS} ms"
-                # echo "Peak memory usage   : $PEAK_MEM KB"
-                # echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
-                # echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
-              '
+                tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+                  if ./tigergraph/app/cmd/gsql "
+                  USE GRAPH ADS 
+                  RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                    echo -n "."
+                  else
+                    echo -n "F"
+                    FAILS=$((FAILS + 1))
+                  fi
+                  TOTAL=$((TOTAL + 1))
+                done
+
+                END_TIME=$(date +%s%N)
+                TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+
+                echo
+                echo "Executed $TOTAL queries"
+                echo "Failed   $FAILS queries"
+                echo "Total execution time: ${TOTAL_TIME_MS} ms"
+
+                if [ "$FAILS" -gt 0 ]; then
+                  exit 1
+                fi
+                EOF
 
           - name: Display results
             run: |
