@@ -84,7 +84,7 @@ jobs:
 
                 CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-                IDs=$(tail -n +2 $CSV | cut -d"," -f1)
+                IDs=$(tail -n +2 "'"$CSV"'" | cut -d"," -f1)
                 TOTAL=0
                 FAILS=0
 
