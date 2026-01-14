@@ -60,3 +60,5 @@ END
 
 
 RUN LOADING JOB load_relations USING f="./mydata/cskg.tsv"
+
+PRINT "initialization completed"

@@ -58,6 +58,7 @@ jobs:
                 echo "Waiting for TigerGraph to be ready..."
                 sleep 10
                 echo "TigerGraph is ready."
+
           - name : Recheck gadmin status
             run: |
                 docker exec tigergraph bash -c \
@@ -81,32 +82,34 @@ jobs:
           - name: Debug query01
             run: |
                 docker exec tigergraph bash -lc '
-                  set -euo pipefail
+                set -euo pipefail
 
                   CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-                  TOTAL=0
-                  FAILS=0
+                TOTAL=0
+                FAILS=0
 
-                  tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                      if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+                    if ./tigergraph/app/cmd/gsql "
+                    USE GRAPH ADS 
+                    RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
                           echo -n "."
-                      else
+                    else
                           echo -n "F"
                           FAILS=$((FAILS + 1))
-                      fi
+                    fi
                       TOTAL=$((TOTAL + 1))
-                  done
+                done
 
-                  echo
-                  echo "Executed $TOTAL queries"
+                echo
+                echo "Executed $TOTAL queries"
 
                   if [ "$FAILS" -gt 0 ]; then
-                      echo "Failed queries: $FAILS"
+                    echo "Failed queries: $FAILS"
                       exit 1
-                  else
-                      echo "All queries succeeded"
-                  fi
+                else
+                    echo "All queries succeeded"
+                fi
                 '
 
           - name: Run query01 on sample-nodes.csv and collect metrics
