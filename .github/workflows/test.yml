@@ -77,6 +77,36 @@ jobs:
             run: |
                 docker exec tigergraph bash -c \
                     "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
+          
+          - name: Debug query01
+            run: |
+                set -euo pipefail
+
+                CSV="/home/tigergraph/test1/sample_nodes.csv"
+
+                IDs=$(tail -n +2 "$CSV" | cut -d"," -f1)
+                TOTAL=0
+                FAILS=0
+
+                for ID in $IDs; do
+                    # Run query
+                    if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                        echo -n "."   # Successful
+                    else
+                        echo -n "F"   # Failed
+                        ((FAILS++))
+                    fi
+                    ((TOTAL++))
+                done
+
+                echo
+                echo "Executed $TOTAL queries"
+                if [ "$FAILS" -gt 0 ]; then
+                    echo "Failed queries: $FAILS"
+                    exit 1   # Fail CI if any query failed
+                else
+                    echo "All queries succeeded"
+                fi
 
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
