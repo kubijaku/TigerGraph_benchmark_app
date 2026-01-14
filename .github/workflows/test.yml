@@ -68,79 +68,79 @@ jobs:
                 docker exec tigergraph bash -c \
                     "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
 
-          # - name: Add query01 to TigerGraph
-          #   run: |
-          #       docker exec tigergraph bash -c \
-          #           "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
+          - name: Add query01 to TigerGraph
+            run: |
+                docker exec tigergraph bash -c \
+                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
                 
-          # - name: check csv file
-          #   run: |
-          #       docker exec tigergraph bash -c \
-          #           "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
+          - name: check csv file
+            run: |
+                docker exec tigergraph bash -c \
+                    "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
           
-          # - name: Debug query01
-          #   run: |
-          #       set -euo pipefail
+          - name: Debug query01
+            run: |
+                set -euo pipefail
 
-          #       CSV="/home/tigergraph/test1/sample_nodes.csv"
+                CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-          #       IDs=$(tail -n +2 "$CSV" | cut -d"," -f1)
-          #       TOTAL=0
-          #       FAILS=0
+                IDs=$(tail -n +2 $CSV | cut -d"," -f1)
+                TOTAL=0
+                FAILS=0
 
-          #       for ID in $IDs; do
-          #           # Run query
-          #           if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-          #               echo -n "."   # Successful
-          #           else
-          #               echo -n "F"   # Failed
-          #               ((FAILS++))
-          #           fi
-          #           ((TOTAL++))
-          #       done
+                for ID in $IDs; do
+                    # Run query
+                    if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                        echo -n "."   # Successful
+                    else
+                        echo -n "F"   # Failed
+                        ((FAILS++))
+                    fi
+                    ((TOTAL++))
+                done
 
-          #       echo
-          #       echo "Executed $TOTAL queries"
-          #       if [ "$FAILS" -gt 0 ]; then
-          #           echo "Failed queries: $FAILS"
-          #           exit 1   # Fail CI if any query failed
-          #       else
-          #           echo "All queries succeeded"
-          #       fi
+                echo
+                echo "Executed $TOTAL queries"
+                if [ "$FAILS" -gt 0 ]; then
+                    echo "Failed queries: $FAILS"
+                    exit 1   # Fail CI if any query failed
+                else
+                    echo "All queries succeeded"
+                fi
 
-          # - name: Run query01 on sample-nodes.csv and collect metrics
-          #   id: metrics
-          #   run: |
-          #     set -euo pipefail
-          #     echo "Running query_01 for all IDs in sample-nodes.csv"
-          #     START_TIME=$(date +%s%N)
+          - name: Run query01 on sample-nodes.csv and collect metrics
+            id: metrics
+            run: |
+              set -euo pipefail
+              echo "Running query_01 for all IDs in sample-nodes.csv"
+              START_TIME=$(date +%s%N)
 
-          #     CSV="/home/tigergraph/test1/sample_nodes.csv"
+              CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-          #     OUTPUT=$(
-          #       /usr/bin/time -v bash -c '
-          #         tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
-          #             if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-          #                 echo -n "." >&2
-          #             else
-          #                 echo "Query failed for $ID" >&2
-          #                 exit 1
-          #             fi
-          #         done
-          #       ' 2>&1
-          #     )
+              OUTPUT=$(
+                /usr/bin/time -v bash -c '
+                  tail -n +2 "'"$CSV"'" | cut -d"," -f1 | while IFS= read -r ID; do
+                      if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                          echo -n "." >&2
+                      else
+                          echo "Query failed for $ID" >&2
+                          exit 1
+                      fi
+                  done
+                ' 2>&1
+              )
 
-          #     END_TIME=$(date +%s%N)
-          #     TOTAL_TIME_NS=$((END_TIME - START_TIME))
-          #     TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
+              END_TIME=$(date +%s%N)
+              TOTAL_TIME_NS=$((END_TIME - START_TIME))
+              TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
 
-          #     PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
-          #     echo "Total execution time: ${TOTAL_TIME_MS} ms"
-          #     echo "Peak memory usage   : $PEAK_MEM KB"
-          #     echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
-          #     echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
+              PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
+              echo "Total execution time: ${TOTAL_TIME_MS} ms"
+              echo "Peak memory usage   : $PEAK_MEM KB"
+              echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
+              echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
 
-          # - name: Display results
-          #   run: |
-          #       echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
-          #       echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
+          - name: Display results
+            run: |
+                echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
+                echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
