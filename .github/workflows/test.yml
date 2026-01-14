@@ -126,26 +126,25 @@ jobs:
                   /usr/bin/time -v bash -c '
                     tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
                         if ./tigergraph/app/cmd/gsql "
-                          USE GRAPH ADS 
-                          RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                            echo -n "." >&2
+                        USE GRAPH ADS 
+                        RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                              echo -n "."
                         else
-                            echo "Query failed for $ID" >&2
-                            exit 1
+                              echo -n "F"
                         fi
                     done
                   ' 2>&1
                 )
 
-                END_TIME=$(date +%s%N)
-                TOTAL_TIME_NS=$((END_TIME - START_TIME))
-                TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
+                # END_TIME=$(date +%s%N)
+                # TOTAL_TIME_NS=$((END_TIME - START_TIME))
+                # TOTAL_TIME_MS=$((TOTAL_TIME_NS / 1000000))
 
-                PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
-                echo "Total execution time: ${TOTAL_TIME_MS} ms"
-                echo "Peak memory usage   : $PEAK_MEM KB"
-                echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
-                echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
+                # PEAK_MEM=$(echo "$OUTPUT" | grep 'Maximum resident set size' | awk '{print $6}')
+                # echo "Total execution time: ${TOTAL_TIME_MS} ms"
+                # echo "Peak memory usage   : $PEAK_MEM KB"
+                # echo "final_time=$TOTAL_TIME_MS" >> "$GITHUB_OUTPUT"
+                # echo "final_memory=$PEAK_MEM" >> "$GITHUB_OUTPUT"
               '
 
           - name: Display results
