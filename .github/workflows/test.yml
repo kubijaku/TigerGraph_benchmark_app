@@ -90,9 +90,7 @@ jobs:
                 FAILS=0
 
                 tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                    if ./tigergraph/app/cmd/gsql "
-                    USE GRAPH ADS 
-                    RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                    if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
                           echo -n "."
                     else
                           echo -n "F"
@@ -115,42 +113,40 @@ jobs:
           - name: Run query01 on sample-nodes.csv and collect metrics
             id: metrics
             run: |
-                docker exec tigergraph bash -lc <<'EOF'
-                set -euo pipefail
+              docker exec tigergraph bash -lc <<'EOF'
+              set -euo pipefail
 
-                echo "Running query_01 for all IDs in sample-nodes.csv"
+              echo "Running query_01 for all IDs in sample-nodes.csv"
 
-                CSV="/home/tigergraph/test1/sample_nodes.csv"
+              CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-                START_TIME=$(date +%s%N)
+              START_TIME=$(date +%s%N)
 
-                TOTAL=0
-                FAILS=0
+              TOTAL=0
+              FAILS=0
 
-                tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                  if ./tigergraph/app/cmd/gsql "
-                  USE GRAPH ADS 
-                  RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                    echo -n "."
-                  else
-                    echo -n "F"
-                    FAILS=$((FAILS + 1))
-                  fi
-                  TOTAL=$((TOTAL + 1))
-                done
-
-                END_TIME=$(date +%s%N)
-                TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
-
-                echo
-                echo "Executed $TOTAL queries"
-                echo "Failed   $FAILS queries"
-                echo "Total execution time: ${TOTAL_TIME_MS} ms"
-
-                if [ "$FAILS" -gt 0 ]; then
-                  exit 1
+              tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+                if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+                  echo -n "."
+                else
+                  echo -n "F"
+                  FAILS=$((FAILS + 1))
                 fi
-                EOF
+                TOTAL=$((TOTAL + 1))
+              done
+
+              END_TIME=$(date +%s%N)
+              TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+
+              echo
+              echo "Executed $TOTAL queries"
+              echo "Failed   $FAILS queries"
+              echo "Total execution time: ${TOTAL_TIME_MS} ms"
+
+              if [ "$FAILS" -gt 0 ]; then
+                exit 1
+              fi
+              EOF
 
           - name: Display results
             run: |
