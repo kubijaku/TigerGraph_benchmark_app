@@ -4,151 +4,151 @@ on:
     workflow_dispatch:
 
 jobs:
-    performance-test:
-        runs-on: ubuntu-latest
+  performance-test:
+    runs-on: ubuntu-latest
 
-        steps:
-        #   - name: Checkout
-        #     uses: actions/checkout@v4
-        #     with:
-        #       lfs: true
-          - name: Checkout code
-            uses: actions/checkout@v4
+    steps:
+    #   - name: Checkout
+    #     uses: actions/checkout@v4
+    #     with:
+    #       lfs: true
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          - name: Create LFS file list
-            run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-          - name: Restore LFS cache
-            uses: actions/cache@v4
-            id: lfs-cache
-            with:
-                path: .git/lfs
-                key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+            path: .git/lfs
+            key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
 
-          - name: Git LFS Pull
-            run: git lfs pull
+      - name: Git LFS Pull
+        run: git lfs pull
 
-          - name: Start TigerGraph container
-            run: |
-                docker run -d --name tigergraph \
-                -p 14022:14022 \
-                -p 9000:9000 \
-                -v $PWD/initialization:/home/tigergraph/mydata \
-                -v $PWD/queries:/home/tigergraph/queries \
-                -v $PWD/test1:/home/tigergraph/test1 \
-                tigergraph/community:4.2.2
+      - name: Start TigerGraph container
+        run: |
+            docker run -d --name tigergraph \
+            -p 14022:14022 \
+            -p 9000:9000 \
+            -v $PWD/initialization:/home/tigergraph/mydata \
+            -v $PWD/queries:/home/tigergraph/queries \
+            -v $PWD/test1:/home/tigergraph/test1 \
+            tigergraph/community:4.2.2
 
-          - name: Start TigerGraph services inside container
-            run: |
-                echo "Initializing TigerGraph with gadmin..."
-                docker exec tigergraph bash -c \
-                    "./tigergraph/app/cmd/gadmin start all"
-        
-          - name: Print head of cskg file
-            run: |
-                docker exec tigergraph bash -c \
-                    "head -n 5 /home/tigergraph/mydata/cskg.tsv"
-        
-          - name : Check gadmin status
-            run: |
-                docker exec tigergraph bash -c \
-                    "./tigergraph/app/cmd/gadmin status gsql"
-          - name: Wait for TigerGraph to be ready
-            run: |
-                echo "Waiting for TigerGraph to be ready..."
-                sleep 10
-                echo "TigerGraph is ready."
+      - name: Start TigerGraph services inside container
+        run: |
+            echo "Initializing TigerGraph with gadmin..."
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin start all"
+    
+      - name: Print head of cskg file
+        run: |
+            docker exec tigergraph bash -c \
+                "head -n 5 /home/tigergraph/mydata/cskg.tsv"
+    
+      - name : Check gadmin status
+        run: |
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql"
+      - name: Wait for TigerGraph to be ready
+        run: |
+            echo "Waiting for TigerGraph to be ready..."
+            sleep 10
+            echo "TigerGraph is ready."
 
-          - name : Recheck gadmin status
-            run: |
-                docker exec tigergraph bash -c \
-                    "./tigergraph/app/cmd/gadmin status gsql"
-                
-          - name: Run init script
-            run: |
-                docker exec tigergraph bash -c \
-                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
+      - name : Recheck gadmin status
+        run: |
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql"
+            
+      - name: Run init script
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
 
-          - name: Add query01 to TigerGraph
-            run: |
-                docker exec tigergraph bash -c \
-                    "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
-                
-          - name: check csv file
-            run: |
-                docker exec tigergraph bash -c \
-                    "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
-          
-          - name: Debug query01
-            run: |
-                docker exec tigergraph bash -lc '
-                set -euo pipefail
-
-                  CSV="/home/tigergraph/test1/sample_nodes.csv"
-
-                TOTAL=0
-                FAILS=0
-
-                tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                    if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                          echo -n "."
-                    else
-                          echo -n "F"
-                          FAILS=$((FAILS + 1))
-                    fi
-                      TOTAL=$((TOTAL + 1))
-                done
-
-                echo
-                echo "Executed $TOTAL queries"
-
-                  if [ "$FAILS" -gt 0 ]; then
-                    echo "Failed queries: $FAILS"
-                      exit 1
-                else
-                    echo "All queries succeeded"
-                fi
-                '
-
-          - name: Run query01 on sample-nodes.csv and collect metrics
-            id: metrics
-            run: |
-              docker exec tigergraph bash -lc <<'EOF'
-              set -euo pipefail
-
-              echo "Running query_01 for all IDs in sample-nodes.csv"
+      - name: Add query01 to TigerGraph
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_01.gsql"
+            
+      - name: check csv file
+        run: |
+            docker exec tigergraph bash -c \
+                "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
+      
+      - name: Debug query01
+        run: |
+            docker exec tigergraph bash -lc '
+            set -euo pipefail
 
               CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-              START_TIME=$(date +%s%N)
+            TOTAL=0
+            FAILS=0
 
-              TOTAL=0
-              FAILS=0
-
-              tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+            tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
                 if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                  echo -n "."
+                      echo -n "."
                 else
-                  echo -n "F"
-                  FAILS=$((FAILS + 1))
+                      echo -n "F"
+                      FAILS=$((FAILS + 1))
                 fi
-                TOTAL=$((TOTAL + 1))
-              done
+                  TOTAL=$((TOTAL + 1))
+            done
 
-              END_TIME=$(date +%s%N)
-              TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
-
-              echo
-              echo "Executed $TOTAL queries"
-              echo "Failed   $FAILS queries"
-              echo "Total execution time: ${TOTAL_TIME_MS} ms"
+            echo
+            echo "Executed $TOTAL queries"
 
               if [ "$FAILS" -gt 0 ]; then
-                exit 1
-              fi
-              EOF
+                echo "Failed queries: $FAILS"
+                  exit 1
+            else
+                echo "All queries succeeded"
+            fi
+            '
 
-          - name: Display results
-            run: |
-                echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
-                echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
+      - name: Run query01 on sample-nodes.csv and collect metrics
+        id: metrics
+        run: |
+          docker exec tigergraph bash -lc '
+            set -euo pipefail
+
+            echo "Running query_01 for all IDs in sample-nodes.csv"
+
+            CSV="/home/tigergraph/test1/sample_nodes.csv"
+
+            START_TIME=$(date +%s%N)
+
+            TOTAL=0
+            FAILS=0
+
+            tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+            if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+            echo -n "."
+            else
+            echo -n "F"
+            FAILS=$((FAILS + 1))
+            fi
+            TOTAL=$((TOTAL + 1))
+            done
+
+            END_TIME=$(date +%s%N)
+            TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+
+            echo
+            echo "Executed $TOTAL queries"
+            echo "Failed   $FAILS queries"
+            echo "Total execution time: ${TOTAL_TIME_MS} ms"
+
+            if [ "$FAILS" -gt 0 ]; then
+            exit 1
+            fi
+            '
+
+      - name: Display results
+        run: |
+            echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
+            echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
