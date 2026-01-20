@@ -96,7 +96,7 @@ jobs:
                       echo -n "F"
                       FAILS=$((FAILS + 1))
                 fi
-                  TOTAL=$((TOTAL + 1))
+                TOTAL=$((TOTAL + 1))
             done
 
             echo
@@ -139,7 +139,6 @@ jobs:
                     echo -n \".\"
                   else
                     echo -n \"F\"
-                    echo fail >&2
                   fi
                 done < \"$CSV\"
               " 2>&1
@@ -147,27 +146,20 @@ jobs:
 
             END_TIME=$(date +%s%N)
             TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+            echo "Output: $OUTPUT"
 
-            TOTAL=$(echo "$OUTPUT" | tr -cd ".F" | wc -c)
+
+            TOTAL=$(echo "$OUTPUT" | tr -cd "." | wc -c)
             FAILS=$(echo "$OUTPUT" | tr -cd "F" | wc -c)
 
             PEAK_MEM_KB=$(echo "$OUTPUT" | grep "Maximum resident set size" | awk "{print \$6}")
-
-            echo
+            
             echo "Executed $TOTAL queries"
             echo "Failed   $FAILS queries"
             echo "Total execution time: ${TOTAL_TIME_MS} ms"
             echo "Peak memory usage   : ${PEAK_MEM_KB} KB"
 
-            echo "final_time=${TOTAL_TIME_MS}" >> "$GITHUB_OUTPUT"
-            echo "final_memory=${PEAK_MEM_KB}" >> "$GITHUB_OUTPUT"
-
             if [ "$FAILS" -gt 0 ]; then
               exit 1
             fi
           '
-
-      - name: Display results
-        run: |
-            echo "Final measured time   : ${{ steps.metrics.outputs.final_time }}"
-            echo "Final measured memory : ${{ steps.metrics.outputs.final_memory }} KB"
