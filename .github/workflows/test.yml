@@ -169,7 +169,4 @@ jobs:
             echo "================ FINAL METRICS ================"
             echo "Second best execution time : ${SECOND_BEST_TIME} ms"
             echo "Second worst memory usage  : ${SECOND_WORST_MEM} KB"
-
-            echo "final_time=${SECOND_BEST_TIME}" >> "$GITHUB_OUTPUT"
-            echo "final_memory=${SECOND_WORST_MEM}" >> "$GITHUB_OUTPUT"
           '
