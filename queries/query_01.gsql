@@ -13,5 +13,3 @@ BEGIN
 END
 
 INSTALL QUERY query_01
-
-PRINT "query_01 completed"
