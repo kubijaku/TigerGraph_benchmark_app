@@ -106,10 +106,11 @@ jobs:
       #           echo "All queries succeeded"
       #       fi
       #       '
-      # - name: Install GNU time in TigerGraph container
-      #   run: |
-      #     docker exec -u root tigergraph apt update
-      #     docker exec -u root tigergraph apt install -y time
+      
+      - name: Install GNU time in TigerGraph container
+        run: |
+          docker exec -u root tigergraph apt update
+          docker exec -u root tigergraph apt install -y time
 
       - name: Run query01 on sample-nodes.csv and collect metrics
         id: metrics
