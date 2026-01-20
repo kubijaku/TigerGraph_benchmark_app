@@ -8,10 +8,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    #   - name: Checkout
-    #     uses: actions/checkout@v4
-    #     with:
-    #       lfs: true
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -53,6 +49,7 @@ jobs:
         run: |
             docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql"
+
       - name: Wait for TigerGraph to be ready
         run: |
             echo "Waiting for TigerGraph to be ready..."
@@ -79,40 +76,40 @@ jobs:
             docker exec tigergraph bash -c \
                 "head -n 5 /home/tigergraph/test1/sample_nodes.csv"
       
-      - name: Debug query01
-        run: |
-            docker exec tigergraph bash -lc '
-            set -euo pipefail
+      # - name: Debug query01
+      #   run: |
+      #       docker exec tigergraph bash -lc '
+      #       set -euo pipefail
 
-              CSV="/home/tigergraph/test1/sample_nodes.csv"
+      #         CSV="/home/tigergraph/test1/sample_nodes.csv"
 
-            TOTAL=0
-            FAILS=0
+      #       TOTAL=0
+      #       FAILS=0
 
-            tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
-                if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
-                      echo -n "."
-                else
-                      echo -n "F"
-                      FAILS=$((FAILS + 1))
-                fi
-                TOTAL=$((TOTAL + 1))
-            done
+      #       tail -n +2 "$CSV" | cut -d"," -f1 | while IFS= read -r ID; do
+      #           if ./tigergraph/app/cmd/gsql "USE GRAPH ADS RUN QUERY query_01(\"$ID\")" > /dev/null 2>&1; then
+      #                 echo -n "."
+      #           else
+      #                 echo -n "F"
+      #                 FAILS=$((FAILS + 1))
+      #           fi
+      #           TOTAL=$((TOTAL + 1))
+      #       done
 
-            echo
-            echo "Executed $TOTAL queries"
+      #       echo
+      #       echo "Executed $TOTAL queries"
 
-              if [ "$FAILS" -gt 0 ]; then
-                echo "Failed queries: $FAILS"
-                  exit 1
-            else
-                echo "All queries succeeded"
-            fi
-            '
-      - name: Install GNU time in TigerGraph container
-        run: |
-          docker exec -u root tigergraph apt update
-          docker exec -u root tigergraph apt install -y time
+      #         if [ "$FAILS" -gt 0 ]; then
+      #           echo "Failed queries: $FAILS"
+      #             exit 1
+      #       else
+      #           echo "All queries succeeded"
+      #       fi
+      #       '
+      # - name: Install GNU time in TigerGraph container
+      #   run: |
+      #     docker exec -u root tigergraph apt update
+      #     docker exec -u root tigergraph apt install -y time
 
       - name: Run query01 on sample-nodes.csv and collect metrics
         id: metrics
