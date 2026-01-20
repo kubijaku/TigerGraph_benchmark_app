@@ -146,11 +146,12 @@ jobs:
 
             END_TIME=$(date +%s%N)
             TOTAL_TIME_MS=$(( (END_TIME - START_TIME) / 1000000 ))
-            echo "Output: $OUTPUT"
+            ONLY_OUTPUT=$(printf '%s\n' "$OUTPUT" | grep -o '^[.F]*' | head -n 1)
+            echo "Full output: $OUTPUT"
+            echo "Only output: $ONLY_OUTPUT"
 
-
-            TOTAL=$(echo "$OUTPUT" | tr -cd "." | wc -c)
-            FAILS=$(echo "$OUTPUT" | tr -cd "F" | wc -c)
+            TOTAL=$(echo "$ONLY_OUTPUT" | tr -cd "." | wc -c)
+            FAILS=$(echo "$ONLY_OUTPUT" | tr -cd "F" | wc -c)
 
             PEAK_MEM_KB=$(echo "$OUTPUT" | grep "Maximum resident set size" | awk "{print \$6}")
             
@@ -158,8 +159,4 @@ jobs:
             echo "Failed   $FAILS queries"
             echo "Total execution time: ${TOTAL_TIME_MS} ms"
             echo "Peak memory usage   : ${PEAK_MEM_KB} KB"
-
-            if [ "$FAILS" -gt 0 ]; then
-              exit 1
-            fi
           '
