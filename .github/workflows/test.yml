@@ -112,6 +112,10 @@ jobs:
           docker exec -u root tigergraph apt update
           docker exec -u root tigergraph apt install -y time
 
+      - name: Change mode
+        run: |
+          docker exec tigergraph chmod +x /home/tigergraph/test1/test1.sh
+
       - name: Run query01 on sample-nodes.csv and collect metrics
         id: metrics
         run: |
