@@ -3,16 +3,16 @@ stages:
 
 test-job:
   stage: test
-  image: quay.io/podman/stable:latest
 
   rules:
     - if: $CI_COMMIT_TAG =~ /^test.*/
 
   variables:
     PODMAN_IGNORE_CGROUPSV1_WARNING: "1"
+    GIT_LFS_SKIP_SMUDGE: "1"   # recommended for speed; we pull explicitly
 
   before_script:
-    - apk add --no-cache bash git git-lfs
+    - dnf -y install git git-lfs
     - git lfs install
     - git lfs pull
 
@@ -28,6 +28,11 @@ test-job:
         -v "$CI_PROJECT_DIR/queries:/home/tigergraph/queries:Z" \
         -v "$CI_PROJECT_DIR/test1:/home/tigergraph/test1:Z" \
         docker.io/tigergraph/community:4.2.2
+
+    # --- Debug tsv file ---
+    - |
+      podman exec tigergraph bash -c \
+        "head -n 5 /home/tigergraph/mydata/cskg.tsv"
 
     # --- Start TigerGraph services ---
     - |
@@ -54,13 +59,13 @@ test-job:
 
     # --- Run benchmark and capture output ---
     - |
-      podman exec tigergraph bash /home/tigergraph/test1/test1.sh \
-        | tee "output_${CI_PROJECT_NAME}.txt"
+      podman exec tigergraph bash /home/tigergraph/test1/test1.sh 
+    # | tee "output_${CI_PROJECT_NAME}.txt"
 
-  artifacts:
-    paths:
-      - output_${CI_PROJECT_NAME}.txt
-    when: always
+  # artifacts:
+  #   paths:
+  #     - output_${CI_PROJECT_NAME}.txt
+  #   when: always
 
   after_script:
     - podman logs tigergraph || true
