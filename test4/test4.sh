@@ -14,11 +14,7 @@ for RUN in $(seq 1 $RUNS); do
     START=$(date +%s%N)
 
     /usr/bin/time -v -o /tmp/time_$RUN.txt bash -c "
-    if ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_12()\" > /dev/null 2>&1; then
-        echo -n \".\"
-    else
-        echo -n \"F\"
-    fi
+    ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_12()\" > /dev/null 2>&1
     "
 
     END=$(date +%s%N)

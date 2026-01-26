@@ -18,11 +18,7 @@ for RUN in $(seq 1 $RUNS); do
     while IFS=, read -r ID _; do
         [ \"\$ID\" = \"id\" ] && continue
 
-        if ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_01(\\\"\$ID\\\")\" > /dev/null 2>&1; then
-        echo -n \".\"
-        else
-        echo -n \"F\"
-        fi
+        ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_01(\\\"\$ID\\\")\" > /dev/null 2>&1
     done < \"$CSV\"
     "
 
