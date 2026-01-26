@@ -38,7 +38,7 @@ until echo "$output_info" | grep -q "Online"; do
 done            
 
 echo "Loading ADS queries..."
-docker exec "$CONTAINER_NAME" bash -lc '
+docker exec -u root "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
     echo "Running query_$i.gsql"
