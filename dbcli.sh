@@ -57,7 +57,7 @@ fi
 QUERY_NUM=$(printf "%02d" "$GOAL")
 QUERY_FILE="/home/tigergraph/queries/query_${QUERY_NUM}.gsql"
 
-echo "Change mode of ADS queries..."
+echo "Change mode of ADS queriy: ${QUERY_FILE} to be executable"
 docker exec -u root "$CONTAINER_NAME" bash -lc '
     source /home/tigergraph/.bashrc
     if [[ ! -f "$QUERY_FILE" ]]; then
