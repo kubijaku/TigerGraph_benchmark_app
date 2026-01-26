@@ -37,7 +37,7 @@ until echo "$output_info" | grep -q "Online"; do
     "./tigergraph/app/cmd/gadmin status gsql")"
 done            
 
-echo "Loading ADS queries..."
+echo "Change mode of ADS queries..."
 docker exec -u root "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
@@ -47,6 +47,18 @@ docker exec -u root "$CONTAINER_NAME" bash -lc '
     fi
     echo "Running query_$i.gsql"
     chmod +x /home/tigergraph/queries/query_${i}.gsql
+  done
+'
+
+echo "Loading ADS queries into TigerGraph..."
+docker exec "$CONTAINER_NAME" bash -lc '
+  source /home/tigergraph/.bashrc
+  for i in $(seq -w 1 18); do
+    if [[ ! -f /home/tigergraph/queries/query_${i}.gsql ]]; then
+      echo "ERROR: $QUERY_FILE not found"
+      exit 1
+    fi
+    echo "Running query_$i.gsql"
     ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_${i}.gsql
   done
 '
