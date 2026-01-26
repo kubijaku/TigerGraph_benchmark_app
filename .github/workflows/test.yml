@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
 
 jobs:
-  performance-test:
+  test1:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,7 @@ jobs:
             -v $PWD/initialization:/home/tigergraph/mydata \
             -v $PWD/queries:/home/tigergraph/queries \
             -v $PWD/test1:/home/tigergraph/test1 \
-            tigergraph/community:4.2.2
+            kubijaku/tigergraph_ads:0.0.1
 
       - name: Start TigerGraph services inside container
         run: |
@@ -40,31 +40,23 @@ jobs:
             docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin start all"
     
-      - name: Print head of cskg file
+      - name : Wait for TigerGraph to be ready
         run: |
-            docker exec tigergraph bash -c \
-                "head -n 5 /home/tigergraph/mydata/cskg.tsv"
-    
-      - name : Check gadmin status
-        run: |
-            docker exec tigergraph bash -c \
-                "./tigergraph/app/cmd/gadmin status gsql"
-
-      - name: Wait for TigerGraph to be ready
-        run: |
-            echo "Waiting for TigerGraph to be ready..."
-            sleep 10
-            echo "TigerGraph is ready."
-
-      - name : Recheck gadmin status
-        run: |
-            docker exec tigergraph bash -c \
-                "./tigergraph/app/cmd/gadmin status gsql"
-            
-      - name: Run init script
-        run: |
-            docker exec tigergraph bash -c \
-                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/mydata/import.gsql"
+          output_info="$(podman exec tigergraph bash -c \
+            "./tigergraph/app/cmd/gadmin status gsql")"
+            cnt=0
+            until echo "$output_info" | grep -q "Online"; do
+              cnt=$((cnt + 1))
+              if (( cnt % 10 == 0 )); then
+                echo "TigerGraph did not become ready in time. Starting again"
+                podman exec tigergraph bash -c \
+                  "./tigergraph/app/cmd/gadmin start all"
+              fi
+              echo "Waiting for TigerGraph to be ready...: $output_info"
+              sleep 10
+              output_info="$(podman exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql")"
+            done            
 
       - name: Add query01 to TigerGraph
         run: |
@@ -120,3 +112,298 @@ jobs:
         id: metrics
         run: |
           docker exec tigergraph bash -lc /home/tigergraph/test1/test1.sh
+
+
+  test2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+            path: .git/lfs
+            key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - name: Start TigerGraph container
+        run: |
+            docker run -d --name tigergraph \
+            -p 14022:14022 \
+            -p 9000:9000 \
+            -v $PWD/initialization:/home/tigergraph/mydata \
+            -v $PWD/queries:/home/tigergraph/queries \
+            -v $PWD/test2:/home/tigergraph/test2 \
+            kubijaku/tigergraph_ads:0.0.1
+
+      - name: Start TigerGraph services inside container
+        run: |
+            echo "Initializing TigerGraph with gadmin..."
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin start all"
+    
+      - name : Wait for TigerGraph to be ready
+        run: |
+          output_info="$(podman exec tigergraph bash -c \
+            "./tigergraph/app/cmd/gadmin status gsql")"
+            cnt=0
+            until echo "$output_info" | grep -q "Online"; do
+              cnt=$((cnt + 1))
+              if (( cnt % 10 == 0 )); then
+                echo "TigerGraph did not become ready in time. Starting again"
+                podman exec tigergraph bash -c \
+                  "./tigergraph/app/cmd/gadmin start all"
+              fi
+              echo "Waiting for TigerGraph to be ready...: $output_info"
+              sleep 10
+              output_info="$(podman exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql")"
+            done            
+
+      - name: Add query09 to TigerGraph
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_09.gsql"
+
+      - name: Install GNU time in TigerGraph container
+        run: |
+          docker exec -u root tigergraph apt update
+          docker exec -u root tigergraph apt install -y time
+
+      - name: Change mode
+        run: |
+          docker exec -u root tigergraph chmod +x /home/tigergraph/test2/test2.sh
+
+      - name: Run query09 on sample-nodes.csv and collect metrics
+        id: metrics
+        run: |
+          docker exec tigergraph bash -lc /home/tigergraph/test2/test2.sh
+
+
+
+  test3:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+            path: .git/lfs
+            key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - name: Start TigerGraph container
+        run: |
+            docker run -d --name tigergraph \
+            -p 14022:14022 \
+            -p 9000:9000 \
+            -v $PWD/initialization:/home/tigergraph/mydata \
+            -v $PWD/queries:/home/tigergraph/queries \
+            -v $PWD/test3:/home/tigergraph/test3 \
+            kubijaku/tigergraph_ads:0.0.1
+
+      - name: Start TigerGraph services inside container
+        run: |
+            echo "Initializing TigerGraph with gadmin..."
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin start all"
+    
+      - name : Wait for TigerGraph to be ready
+        run: |
+          output_info="$(podman exec tigergraph bash -c \
+            "./tigergraph/app/cmd/gadmin status gsql")"
+            cnt=0
+            until echo "$output_info" | grep -q "Online"; do
+              cnt=$((cnt + 1))
+              if (( cnt % 10 == 0 )); then
+                echo "TigerGraph did not become ready in time. Starting again"
+                podman exec tigergraph bash -c \
+                  "./tigergraph/app/cmd/gadmin start all"
+              fi
+              echo "Waiting for TigerGraph to be ready...: $output_info"
+              sleep 10
+              output_info="$(podman exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql")"
+            done            
+
+      - name: Add query10 to TigerGraph
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_10.gsql"
+
+      - name: Install GNU time in TigerGraph container
+        run: |
+          docker exec -u root tigergraph apt update
+          docker exec -u root tigergraph apt install -y time
+
+      - name: Change mode
+        run: |
+          docker exec -u root tigergraph chmod +x /home/tigergraph/test3/test3.sh
+
+      - name: Run query10 and collect metrics
+        id: metrics
+        run: |
+          docker exec tigergraph bash -lc /home/tigergraph/test3/test3.sh
+
+  test4:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+            path: .git/lfs
+            key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - name: Start TigerGraph container
+        run: |
+            docker run -d --name tigergraph \
+            -p 14022:14022 \
+            -p 9000:9000 \
+            -v $PWD/initialization:/home/tigergraph/mydata \
+            -v $PWD/queries:/home/tigergraph/queries \
+            -v $PWD/test4:/home/tigergraph/test4 \
+            kubijaku/tigergraph_ads:0.0.1
+
+      - name: Start TigerGraph services inside container
+        run: |
+            echo "Initializing TigerGraph with gadmin..."
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin start all"
+    
+      - name : Wait for TigerGraph to be ready
+        run: |
+          output_info="$(podman exec tigergraph bash -c \
+            "./tigergraph/app/cmd/gadmin status gsql")"
+            cnt=0
+            until echo "$output_info" | grep -q "Online"; do
+              cnt=$((cnt + 1))
+              if (( cnt % 10 == 0 )); then
+                echo "TigerGraph did not become ready in time. Starting again"
+                podman exec tigergraph bash -c \
+                  "./tigergraph/app/cmd/gadmin start all"
+              fi
+              echo "Waiting for TigerGraph to be ready...: $output_info"
+              sleep 10
+              output_info="$(podman exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql")"
+            done            
+
+      - name: Add query12 to TigerGraph
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_12.gsql"
+
+      - name: Install GNU time in TigerGraph container
+        run: |
+          docker exec -u root tigergraph apt update
+          docker exec -u root tigergraph apt install -y time
+
+      - name: Change mode
+        run: |
+          docker exec -u root tigergraph chmod +x /home/tigergraph/test4/test4.sh
+
+      - name: Run query12 and collect metrics
+        id: metrics
+        run: |
+          docker exec tigergraph bash -lc /home/tigergraph/test4/test4.sh
+
+  test5:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS cache
+        uses: actions/cache@v4
+        id: lfs-cache
+        with:
+            path: .git/lfs
+            key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+
+      - name: Start TigerGraph container
+        run: |
+            docker run -d --name tigergraph \
+            -p 14022:14022 \
+            -p 9000:9000 \
+            -v $PWD/initialization:/home/tigergraph/mydata \
+            -v $PWD/queries:/home/tigergraph/queries \
+            -v $PWD/test5:/home/tigergraph/test5 \
+            kubijaku/tigergraph_ads:0.0.1
+
+      - name: Start TigerGraph services inside container
+        run: |
+            echo "Initializing TigerGraph with gadmin..."
+            docker exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin start all"
+    
+      - name : Wait for TigerGraph to be ready
+        run: |
+          output_info="$(podman exec tigergraph bash -c \
+            "./tigergraph/app/cmd/gadmin status gsql")"
+            cnt=0
+            until echo "$output_info" | grep -q "Online"; do
+              cnt=$((cnt + 1))
+              if (( cnt % 10 == 0 )); then
+                echo "TigerGraph did not become ready in time. Starting again"
+                podman exec tigergraph bash -c \
+                  "./tigergraph/app/cmd/gadmin start all"
+              fi
+              echo "Waiting for TigerGraph to be ready...: $output_info"
+              sleep 10
+              output_info="$(podman exec tigergraph bash -c \
+                "./tigergraph/app/cmd/gadmin status gsql")"
+            done            
+
+      - name: Add query17 to TigerGraph
+        run: |
+            docker exec tigergraph bash -c \
+                "source /home/tigergraph/.bashrc && ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_17.gsql"
+
+      - name: Install GNU time in TigerGraph container
+        run: |
+          docker exec -u root tigergraph apt update
+          docker exec -u root tigergraph apt install -y time
+
+      - name: Change mode
+        run: |
+          docker exec -u root tigergraph chmod +x /home/tigergraph/test5/test5.sh
+
+      - name: Run query17 and collect metrics
+        id: metrics
+        run: |
+          docker exec tigergraph bash -lc /home/tigergraph/test5/test5.sh
