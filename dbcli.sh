@@ -58,15 +58,13 @@ QUERY_NUM=$(printf "%02d" "$GOAL")
 QUERY_FILE="/home/tigergraph/queries/query_${QUERY_NUM}.gsql"
 
 echo "Change mode of ADS queriy: ${QUERY_FILE} to be executable"
-docker exec -u root "$CONTAINER_NAME" bash -lc '
-    source /home/tigergraph/.bashrc
-    if [[ ! -f "$QUERY_FILE" ]]; then
-        echo "ERROR: $QUERY_FILE not found"
-        exit 1
-    fi
-    echo "Running query_$i.gsql"
-    chmod +x "$QUERY_FILE"
-'
+docker exec -u root "$CONTAINER_NAME" bash -lc "
+  if [[ ! -f '$QUERY_FILE' ]]; then
+    echo 'ERROR: $QUERY_FILE not found'
+    exit 1
+  fi
+  chmod 644 '$QUERY_FILE'
+"
 
 echo "Loading ADS queries into TigerGraph..."
 docker exec "$CONTAINER_NAME" bash -lc '
