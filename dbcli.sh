@@ -77,6 +77,5 @@ echo "Running ADS queries into TigerGraph..."
 docker exec "$CONTAINER_NAME" bash -lc "
     source /home/tigergraph/.bashrc
     echo "Running query_${QUERY_NUM}"
-    ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_${QUERY_NUM}()\" > /dev/null 2>&1
-
+    ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_${QUERY_NUM}()\"
 "
