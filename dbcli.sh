@@ -37,32 +37,6 @@ until echo "$output_info" | grep -q "Online"; do
     "./tigergraph/app/cmd/gadmin status gsql")"
 done            
 
-echo "Change mode of ADS queries..."
-docker exec -u root "$CONTAINER_NAME" bash -lc '
-  source /home/tigergraph/.bashrc
-  for i in $(seq -w 1 18); do
-    if [[ ! -f /home/tigergraph/queries/query_${i}.gsql ]]; then
-      echo "ERROR: $QUERY_FILE not found"
-      exit 1
-    fi
-    echo "Running query_$i.gsql"
-    chmod +x /home/tigergraph/queries/query_${i}.gsql
-  done
-'
-
-echo "Loading ADS queries into TigerGraph..."
-docker exec "$CONTAINER_NAME" bash -lc '
-  source /home/tigergraph/.bashrc
-  for i in $(seq -w 1 18); do
-    if [[ ! -f /home/tigergraph/queries/query_${i}.gsql ]]; then
-      echo "ERROR: $QUERY_FILE not found"
-      exit 1
-    fi
-    echo "Running query_$i.gsql"
-    ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_${i}.gsql
-  done
-'
-
 # Run query:
 
 if [[ $# -lt 1 ]]; then
@@ -82,6 +56,24 @@ fi
 # Zero-pad goal number
 QUERY_NUM=$(printf "%02d" "$GOAL")
 QUERY_FILE="/home/tigergraph/queries/query_${QUERY_NUM}.gsql"
+
+echo "Change mode of ADS queries..."
+docker exec -u root "$CONTAINER_NAME" bash -lc '
+    source /home/tigergraph/.bashrc
+    if [[ ! -f "$QUERY_FILE" ]]; then
+        echo "ERROR: $QUERY_FILE not found"
+        exit 1
+    fi
+    echo "Running query_$i.gsql"
+    chmod +x "$QUERY_FILE"
+'
+
+echo "Loading ADS queries into TigerGraph..."
+docker exec "$CONTAINER_NAME" bash -lc '
+    source /home/tigergraph/.bashrc
+    echo "Running query_$i.gsql"
+    ./tigergraph/app/cmd/gsql < "$QUERY_FILE"
+'
 
 
 docker exec "$CONTAINER_NAME" bash -lc "
