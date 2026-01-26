@@ -67,18 +67,16 @@ docker exec -u root "$CONTAINER_NAME" bash -lc "
 "
 
 echo "Loading ADS queries into TigerGraph..."
-docker exec "$CONTAINER_NAME" bash -lc '
+docker exec "$CONTAINER_NAME" bash -lc "
     source /home/tigergraph/.bashrc
     echo "Running query_$i.gsql"
-    ./tigergraph/app/cmd/gsql < "$QUERY_FILE"
-'
+    ./tigergraph/app/cmd/gsql < '$QUERY_FILE'
+"
 
-
+echo "Running ADS queries into TigerGraph..."
 docker exec "$CONTAINER_NAME" bash -lc "
-  source /home/tigergraph/.bashrc
-  if [[ ! -f '$QUERY_FILE' ]]; then
-    echo 'Error: $QUERY_FILE not found'
-    exit 1
-  fi
-  ./tigergraph/app/cmd/gsql $* < '$QUERY_FILE'
+    source /home/tigergraph/.bashrc
+    echo "Running query_$i.gsql"
+    ./tigergraph/app/cmd/gsql \"USE GRAPH ADS RUN QUERY query_${QUERY_NUM}()\" > /dev/null 2>&1
+
 "
