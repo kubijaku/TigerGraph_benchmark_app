@@ -6,7 +6,7 @@ RUNS=5
 TIMES=()
 MEMS=()
 
-echo "Running query_01 workload $RUNS times"
+echo "Running query_17 workload $RUNS times"
 
 for RUN in $(seq 1 $RUNS); do
     echo
