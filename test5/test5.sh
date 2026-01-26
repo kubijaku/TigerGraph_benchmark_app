@@ -1,6 +1,6 @@
 set -euo pipefail
 
-CSV="/home/tigergraph/test1/sample_nodes.csv"
+CSV="/home/tigergraph/test5/sample_nodes.csv"
 RUNS=5
 
 TIMES=()
