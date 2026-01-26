@@ -11,6 +11,7 @@ else
   docker run -d --name "$CONTAINER_NAME" \
     -p 14022:14022 \
     -p 9000:9000 \
+    -v $PWD/queries:/home/tigergraph/queries \
     "$IMAGE"
 fi
 
@@ -41,8 +42,8 @@ docker exec "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
     echo "Running query_$i.gsql"
-    chmod +x ./queries/query_${i}.gsql
-    ./tigergraph/app/cmd/gsql < ./queries/query_${i}.gsql
+    chmod +x /home/tigergraph/query_${i}.gsql
+    ./tigergraph/app/cmd/gsql < /home/tigergraph/query_${i}.gsql
   done
 '
 
@@ -64,7 +65,7 @@ fi
 
 # Zero-pad goal number
 QUERY_NUM=$(printf "%02d" "$GOAL")
-QUERY_FILE="./queries/query_${QUERY_NUM}.gsql"
+QUERY_FILE="/home/tigergraph/query_${QUERY_NUM}.gsql"
 
 
 docker exec "$CONTAINER_NAME" bash -lc "
