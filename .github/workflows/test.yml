@@ -42,19 +42,19 @@ jobs:
     
       - name : Wait for TigerGraph to be ready
         run: |
-          output_info="$(podman exec tigergraph bash -c \
+          output_info="$(docker exec tigergraph bash -c \
             "./tigergraph/app/cmd/gadmin status gsql")"
             cnt=0
             until echo "$output_info" | grep -q "Online"; do
               cnt=$((cnt + 1))
               if (( cnt % 10 == 0 )); then
                 echo "TigerGraph did not become ready in time. Starting again"
-                podman exec tigergraph bash -c \
+                docker exec tigergraph bash -c \
                   "./tigergraph/app/cmd/gadmin start all"
               fi
               echo "Waiting for TigerGraph to be ready...: $output_info"
               sleep 10
-              output_info="$(podman exec tigergraph bash -c \
+              output_info="$(docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql")"
             done            
 
@@ -152,19 +152,19 @@ jobs:
     
       - name : Wait for TigerGraph to be ready
         run: |
-          output_info="$(podman exec tigergraph bash -c \
+          output_info="$(docker exec tigergraph bash -c \
             "./tigergraph/app/cmd/gadmin status gsql")"
             cnt=0
             until echo "$output_info" | grep -q "Online"; do
               cnt=$((cnt + 1))
               if (( cnt % 10 == 0 )); then
                 echo "TigerGraph did not become ready in time. Starting again"
-                podman exec tigergraph bash -c \
+                docker exec tigergraph bash -c \
                   "./tigergraph/app/cmd/gadmin start all"
               fi
               echo "Waiting for TigerGraph to be ready...: $output_info"
               sleep 10
-              output_info="$(podman exec tigergraph bash -c \
+              output_info="$(docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql")"
             done            
 
@@ -227,19 +227,19 @@ jobs:
     
       - name : Wait for TigerGraph to be ready
         run: |
-          output_info="$(podman exec tigergraph bash -c \
+          output_info="$(docker exec tigergraph bash -c \
             "./tigergraph/app/cmd/gadmin status gsql")"
             cnt=0
             until echo "$output_info" | grep -q "Online"; do
               cnt=$((cnt + 1))
               if (( cnt % 10 == 0 )); then
                 echo "TigerGraph did not become ready in time. Starting again"
-                podman exec tigergraph bash -c \
+                docker exec tigergraph bash -c \
                   "./tigergraph/app/cmd/gadmin start all"
               fi
               echo "Waiting for TigerGraph to be ready...: $output_info"
               sleep 10
-              output_info="$(podman exec tigergraph bash -c \
+              output_info="$(docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql")"
             done            
 
@@ -300,19 +300,19 @@ jobs:
     
       - name : Wait for TigerGraph to be ready
         run: |
-          output_info="$(podman exec tigergraph bash -c \
+          output_info="$(docker exec tigergraph bash -c \
             "./tigergraph/app/cmd/gadmin status gsql")"
             cnt=0
             until echo "$output_info" | grep -q "Online"; do
               cnt=$((cnt + 1))
               if (( cnt % 10 == 0 )); then
                 echo "TigerGraph did not become ready in time. Starting again"
-                podman exec tigergraph bash -c \
+                docker exec tigergraph bash -c \
                   "./tigergraph/app/cmd/gadmin start all"
               fi
               echo "Waiting for TigerGraph to be ready...: $output_info"
               sleep 10
-              output_info="$(podman exec tigergraph bash -c \
+              output_info="$(docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql")"
             done            
 
@@ -373,19 +373,19 @@ jobs:
     
       - name : Wait for TigerGraph to be ready
         run: |
-          output_info="$(podman exec tigergraph bash -c \
+          output_info="$(docker exec tigergraph bash -c \
             "./tigergraph/app/cmd/gadmin status gsql")"
             cnt=0
             until echo "$output_info" | grep -q "Online"; do
               cnt=$((cnt + 1))
               if (( cnt % 10 == 0 )); then
                 echo "TigerGraph did not become ready in time. Starting again"
-                podman exec tigergraph bash -c \
+                docker exec tigergraph bash -c \
                   "./tigergraph/app/cmd/gadmin start all"
               fi
               echo "Waiting for TigerGraph to be ready...: $output_info"
               sleep 10
-              output_info="$(podman exec tigergraph bash -c \
+              output_info="$(docker exec tigergraph bash -c \
                 "./tigergraph/app/cmd/gadmin status gsql")"
             done            
 
