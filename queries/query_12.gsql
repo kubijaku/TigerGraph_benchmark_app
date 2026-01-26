@@ -1,3 +1,5 @@
+USE GRAPH ADS
+
 BEGIN
 CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ADS { 
   /* Accumulator that finds a single highest number in the graph */
@@ -19,6 +21,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_12() FOR GRAPH ADS {
   PRINT Result AS nodes_with_max_neighbors;
   
 }
-USE GRAPH ADS
-INSTALL QUERY query_12
 END
+
+INSTALL QUERY query_12

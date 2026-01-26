@@ -1,9 +1,12 @@
+USE GRAPH ADS
+
 BEGIN
 CREATE OR REPLACE DISTRIBUTED QUERY query_09() FOR GRAPH ADS { 
   AllNodes = {Entity.*};
   
   PRINT AllNodes.size() as total_node_count;
 }
-USE GRAPH ADS
-INSTALL QUERY query_09
 END
+
+INSTALL QUERY query_09
+

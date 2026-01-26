@@ -1,3 +1,5 @@
+USE GRAPH ADS
+
 BEGIN
 CREATE OR REPLACE DISTRIBUTED QUERY query_17(VERTEX<Entity> startNode, INT depth) FOR GRAPH ADS { 
   /* 0 = Synonym, 1 = Antonym */
@@ -24,6 +26,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY query_17(VERTEX<Entity> startNode, INT depth
   
   PRINT Result;
 }
-USE GRAPH ADS
-INSTALL QUERY query_17
 END
+
+INSTALL QUERY query_17
