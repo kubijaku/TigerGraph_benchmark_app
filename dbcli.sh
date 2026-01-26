@@ -5,10 +5,14 @@ IMAGE="kubijaku/tigergraph_ads:0.0.1"
 
 CONTAINER_NAME="tigergraph_dbcli"
 
-docker run -d --name "$CONTAINER_NAME" \
+if docker ps -a --format '{{.Names}}' | grep -wq "$CONTAINER_NAME"; then
+  echo "Container '$CONTAINER_NAME' already exists. Skipping docker run."
+else
+  docker run -d --name "$CONTAINER_NAME" \
     -p 14022:14022 \
     -p 9000:9000 \
     "$IMAGE"
+fi
 
 
 echo "Initializing TigerGraph with gadmin..."
@@ -37,6 +41,7 @@ docker exec "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
     echo "Running query_$i.gsql"
+    chmod +x ./queries/query_${i}.gsql
     ./tigergraph/app/cmd/gsql < ./queries/query_${i}.gsql
   done
 '
