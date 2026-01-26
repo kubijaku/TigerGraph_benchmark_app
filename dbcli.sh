@@ -41,13 +41,13 @@ echo "Loading ADS queries..."
 docker exec -u root "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
-    if [[ ! -f /home/tigergraph/query_${i}.gsql ]]; then
+    if [[ ! -f /home/tigergraph/queries/query_${i}.gsql ]]; then
       echo "ERROR: $QUERY_FILE not found"
       exit 1
     fi
     echo "Running query_$i.gsql"
-    chmod +x /home/tigergraph/query_${i}.gsql
-    ./tigergraph/app/cmd/gsql < /home/tigergraph/query_${i}.gsql
+    chmod +x /home/tigergraph/queries/query_${i}.gsql
+    ./tigergraph/app/cmd/gsql < /home/tigergraph/queries/query_${i}.gsql
   done
 '
 
@@ -69,7 +69,7 @@ fi
 
 # Zero-pad goal number
 QUERY_NUM=$(printf "%02d" "$GOAL")
-QUERY_FILE="/home/tigergraph/query_${QUERY_NUM}.gsql"
+QUERY_FILE="/home/tigergraph/queries/query_${QUERY_NUM}.gsql"
 
 
 docker exec "$CONTAINER_NAME" bash -lc "
