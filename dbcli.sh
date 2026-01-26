@@ -41,6 +41,10 @@ echo "Loading ADS queries..."
 docker exec -u root "$CONTAINER_NAME" bash -lc '
   source /home/tigergraph/.bashrc
   for i in $(seq -w 1 18); do
+    if [[ ! -f /home/tigergraph/query_${i}.gsql ]]; then
+      echo "ERROR: $QUERY_FILE not found"
+      exit 1
+    fi
     echo "Running query_$i.gsql"
     chmod +x /home/tigergraph/query_${i}.gsql
     ./tigergraph/app/cmd/gsql < /home/tigergraph/query_${i}.gsql
